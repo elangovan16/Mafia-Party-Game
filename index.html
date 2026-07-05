@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Mafia Party Game - Play online or via hotspot with friends. Features unique roles including Mafia, Godfather, Detective, Doctor, and more!" />
+  <meta name="theme-color" content="#1a0a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MAFIA" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>MAFIA – The Party Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ========== LOADING SCREEN ========== -->
+  <div id="screen-loading" class="screen active">
+    <div class="loader-wrap">
+      <div class="loader-moon">🌕</div>
+      <div class="loader-text">MAFIA</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== HOME SCREEN ========== -->
+  <div id="screen-home" class="screen">
+    <div class="bg-overlay"></div>
+    <div class="home-content">
+      <div class="logo-area">
+        <div class="moon-icon">🌕</div>
+        <h1 class="game-title">MAFIA</h1>
+        <p class="game-subtitle">The Ultimate Party Game</p>
+      </div>
+      <div class="home-buttons">
+        <button class="btn btn-primary glow" id="btn-host" onclick="showScreen('screen-setup')">
+          <span class="btn-icon">👑</span> Host a Game
+        </button>
+        <button class="btn btn-secondary" id="btn-join" onclick="showScreen('screen-join')">
+          <span class="btn-icon">🎭</span> Join Game
+        </button>
+        <button class="btn btn-ghost" id="btn-rules" onclick="showScreen('screen-rules')">
+          <span class="btn-icon">📜</span> Rules & Roles
+        </button>
+      </div>
+      <div class="home-footer">
+        <span>Play online • Hotspot • Any device</span>
+      </div>
+    </div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- ========== GAME SETUP SCREEN ========== -->
+  <div id="screen-setup" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+      <h2>Game Setup</h2>
+    </div>
+    <div class="setup-content">
+      <div class="setup-section">
+        <label>Your Name</label>
+        <input type="text" id="host-name" class="input-field" placeholder="Enter your name..." maxlength="20" />
+      </div>
+      <div class="setup-section">
+        <label>Number of Players <span id="player-count-display" class="badge">6</span></label>
+        <input type="range" id="player-count" min="5" max="16" value="6" class="slider" oninput="updatePlayerCount(this.value)" />
+        <div class="slider-labels"><span>5</span><span>16</span></div>
+      </div>
+      <div class="setup-section">
+        <label>Roles in Game</label>
+        <div class="roles-grid" id="roles-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="setup-section">
+        <label>Game Settings</label>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <span>Day Discussion Time</span>
+            <select id="day-time" class="select-field">
+              <option value="60">1 min</option>
+              <option value="120" selected>2 min</option>
+              <option value="180">3 min</option>
+              <option value="300">5 min</option>
+              <option value="0">No limit</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <span>Night Action Time</span>
+            <select id="night-time" class="select-field">
+              <option value="20">20 sec</option>
+              <option value="30" selected>30 sec</option>
+              <option value="45">45 sec</option>
+              <option value="60">1 min</option>
+            </select>
+          </div>
+          <div class="setting-item toggle-item">
+            <span>Sheriff's Badge</span>
+            <label class="toggle"><input type="checkbox" id="sheriff-badge" checked /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-item toggle-item">
+            <span>Last Will</span>
+            <label class="toggle"><input type="checkbox" id="last-will" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="recommended-roles" id="recommended-roles">
+        <!-- Auto-suggest -->
+      </div>
+      <button class="btn btn-primary glow full-width" onclick="createGame()">
+        <span class="btn-icon">🚀</span> Create Game Room
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== JOIN SCREEN ========== -->
+  <div id="screen-join" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+      <h2>Join a Game</h2>
+    </div>
+    <div class="join-content">
+      <div class="join-illustration">🎭</div>
+      <div class="setup-section">
+        <label>Your Name</label>
+        <input type="text" id="join-name" class="input-field" placeholder="Enter your name..." maxlength="20" />
+      </div>
+      <div class="setup-section">
+        <label>Room Code</label>
+        <div class="code-input-wrap">
+          <input type="text" id="room-code-input" class="input-field code-input" placeholder="Enter 6-digit code..." maxlength="6" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+      </div>
+      <button class="btn btn-primary glow full-width" onclick="joinGame()">
+        <span class="btn-icon">🎯</span> Join Room
+      </button>
+      <div class="divider"><span>OR</span></div>
+      <div class="hotspot-info">
+        <div class="hotspot-card">
+          <div class="hotspot-icon">📡</div>
+          <div class="hotspot-text">
+            <strong>Playing via Hotspot?</strong>
+            <p>Host shares their IP address. All players connect to the same WiFi/hotspot, then enter the room code shown on the host's screen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== LOBBY SCREEN ========== -->
+  <div id="screen-lobby" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="leaveLobby()">← Leave</button>
+      <h2>Game Lobby</h2>
+    </div>
+    <div class="lobby-content">
+      <div class="room-code-display">
+        <span class="room-label">Room Code</span>
+        <div class="room-code" id="lobby-room-code">------</div>
+        <button class="copy-btn" onclick="copyRoomCode()" title="Copy code">📋</button>
+      </div>
+      <div class="qr-section" id="qr-section"></div>
+      <div class="players-section">
+        <div class="players-header">
+          <span>Players <span id="lobby-player-count" class="badge">0</span></span>
+          <span class="players-needed" id="players-needed">Need <span id="need-count">5</span> more</span>
+        </div>
+        <div class="players-list" id="lobby-players-list">
+          <!-- Players added by JS -->
+        </div>
+      </div>
+      <div id="host-controls" style="display:none">
+        <button class="btn btn-primary glow full-width" id="btn-start-game" onclick="startGame()" disabled>
+          <span class="btn-icon">⚡</span> Start Game
+        </button>
+        <p class="start-hint" id="start-hint">Need at least 5 players to start</p>
+      </div>
+      <div id="waiting-msg" style="display:none">
+        <div class="waiting-indicator">
+          <div class="pulse-dot"></div>
+          <span>Waiting for host to start...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ROLE REVEAL SCREEN ========== -->
+  <div id="screen-role-reveal" class="screen">
+    <div class="role-reveal-content">
+      <div class="role-card" id="role-card">
+        <div class="role-card-inner" id="role-card-inner">
+          <div class="role-card-front">
+            <div class="card-question">?</div>
+            <p>Tap to reveal your role</p>
+          </div>
+          <div class="role-card-back" id="role-card-back">
+            <div class="role-icon" id="reveal-icon">🎭</div>
+            <div class="role-name" id="reveal-name">Villager</div>
+            <div class="role-team" id="reveal-team">Town</div>
+            <div class="role-desc" id="reveal-desc">Description here</div>
+            <div class="role-ability" id="reveal-ability"></div>
+          </div>
+        </div>
+      </div>
+      <div class="role-reveal-footer" id="role-reveal-footer" style="display:none">
+        <p class="pass-device-msg">Pass the device to the next player</p>
+        <button class="btn btn-primary" onclick="nextRoleReveal()">
+          <span class="btn-icon">➡️</span> Next Player
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NIGHT PHASE SCREEN ========== -->
+  <div id="screen-night" class="screen">
+    <div class="night-overlay"></div>
+    <div class="phase-content">
+      <div class="phase-header">
+        <div class="phase-icon night-icon">🌙</div>
+        <h2 class="phase-title">Night Falls...</h2>
+        <div class="night-number">Night <span id="night-num">1</span></div>
+      </div>
+
+      <!-- Night action queue display -->
+      <div class="night-queue" id="night-queue">
+        <p class="night-instructions" id="night-instructions">Close your eyes. The Mafia will awaken...</p>
+        <div class="night-actions" id="night-actions">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+
+      <!-- Action panel (shown for relevant role) -->
+      <div class="action-panel" id="action-panel" style="display:none">
+        <div class="action-panel-header">
+          <div class="action-role-icon" id="action-role-icon">🔪</div>
+          <div class="action-role-name" id="action-role-name">Mafia</div>
+          <div class="action-prompt" id="action-prompt">Choose a target</div>
+        </div>
+        <div class="target-list" id="target-list">
+          <!-- Dynamic player list -->
+        </div>
+        <div class="action-timer" id="action-timer">
+          <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+          <span id="timer-text">30</span>
+        </div>
+        <button class="btn btn-danger" id="btn-confirm-action" onclick="confirmNightAction()" disabled>
+          Confirm Action
+        </button>
+        <button class="btn btn-ghost" onclick="skipNightAction()">Skip / No Action</button>
+      </div>
+
+      <div class="narrator-panel" id="narrator-panel">
+        <button class="btn btn-primary glow" onclick="advanceNight()">
+          <span>Continue ➡️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DAWN SCREEN (Transition) ========== -->
+  <div id="screen-dawn" class="screen">
+    <div class="dawn-content">
+      <div class="dawn-icon">🌅</div>
+      <h2 class="dawn-title">Dawn Breaks</h2>
+      <div class="dawn-news" id="dawn-news">
+        <!-- News of the night -->
+      </div>
+      <button class="btn btn-primary glow" onclick="showDayPhase()">
+        Begin Discussion ☀️
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== DAY PHASE SCREEN ========== -->
+  <div id="screen-day" class="screen">
+    <div class="phase-content day-phase">
+      <div class="phase-header day-header">
+        <div class="phase-icon day-icon">☀️</div>
+        <h2 class="phase-title">Day <span id="day-num">1</span></h2>
+        <div class="day-timer-wrap">
+          <div class="day-timer" id="day-timer-display">2:00</div>
+        </div>
+      </div>
+
+      <div class="players-alive-section">
+        <div class="section-label">Players Alive <span class="badge" id="alive-count">6</span></div>
+        <div class="players-grid" id="day-players-grid">
+          <!-- Player cards -->
+        </div>
+      </div>
+
+      <div class="voting-section" id="voting-section">
+        <div class="section-label">Nominate to Eliminate</div>
+        <div class="vote-tally" id="vote-tally">
+          <!-- Vote tallies -->
+        </div>
+        <div class="vote-buttons" id="vote-buttons">
+          <!-- Vote buttons -->
+        </div>
+      </div>
+
+      <div class="day-log" id="day-log">
+        <div class="section-label">Game Log</div>
+        <div class="log-entries" id="log-entries"></div>
+      </div>
+
+      <button class="btn btn-warning full-width" onclick="triggerVote()">
+        <span class="btn-icon">⚖️</span> Call for Vote
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== VOTE SCREEN ========== -->
+  <div id="screen-vote" class="screen">
+    <div class="vote-content">
+      <div class="vote-header">
+        <div class="vote-icon">⚖️</div>
+        <h2>Voting Time</h2>
+        <p>Who should be eliminated?</p>
+      </div>
+      <div class="vote-candidates" id="vote-candidates">
+        <!-- Candidates -->
+      </div>
+      <div class="vote-results" id="vote-results" style="display:none">
+        <!-- Results -->
+      </div>
+      <div class="vote-actions" id="vote-actions">
+        <button class="btn btn-danger glow" id="btn-cast-vote" onclick="castVote()" disabled>
+          Cast Vote
+        </button>
+        <button class="btn btn-ghost" onclick="abstainVote()">Abstain</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ELIMINATION SCREEN ========== -->
+  <div id="screen-elimination" class="screen">
+    <div class="elimination-content">
+      <div class="elimination-icon" id="elim-icon">💀</div>
+      <h2 class="elimination-title" id="elim-title">Player Eliminated</h2>
+      <div class="eliminated-player-card" id="elim-player-card">
+        <!-- Player info -->
+      </div>
+      <div class="last-will-section" id="last-will-section" style="display:none">
+        <div class="last-will-title">📜 Last Will</div>
+        <div class="last-will-text" id="last-will-text"></div>
+      </div>
+      <button class="btn btn-primary glow" onclick="continueAfterElimination()">
+        Continue <span>→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== WIN SCREEN ========== -->
+  <div id="screen-win" class="screen">
+    <div class="win-content">
+      <div class="confetti-container" id="confetti"></div>
+      <div class="win-badge" id="win-badge">🏆</div>
+      <h2 class="win-title" id="win-title">Village Wins!</h2>
+      <p class="win-subtitle" id="win-subtitle">Justice has been served</p>
+      <div class="win-stats" id="win-stats">
+        <!-- Stats -->
+      </div>
+      <div class="all-roles-reveal" id="all-roles-reveal">
+        <div class="section-label">All Roles Revealed</div>
+        <div class="roles-reveal-list" id="roles-reveal-list">
+          <!-- All players and their roles -->
+        </div>
+      </div>
+      <div class="win-buttons">
+        <button class="btn btn-primary glow" onclick="playAgain()">
+          <span class="btn-icon">🔄</span> Play Again
+        </button>
+        <button class="btn btn-ghost" onclick="showScreen('screen-home')">
+          <span class="btn-icon">🏠</span> Main Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RULES SCREEN ========== -->
+  <div id="screen-rules" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+      <h2>Rules & Roles</h2>
+    </div>
+    <div class="rules-content">
+      <div class="rules-tabs">
+        <button class="tab-btn active" onclick="showTab('tab-howtoplay', this)">How to Play</button>
+        <button class="tab-btn" onclick="showTab('tab-roles', this)">Roles</button>
+        <button class="tab-btn" onclick="showTab('tab-winning', this)">Winning</button>
+        <button class="tab-btn" onclick="showTab('tab-tips', this)">Tips</button>
+      </div>
+
+      <!-- How to Play Tab -->
+      <div class="tab-content active" id="tab-howtoplay">
+        <div class="rules-card">
+          <h3>🎯 Objective</h3>
+          <p>MAFIA is a social deduction game where two groups compete: the <strong>Town</strong> (civilians) and the <strong>Mafia</strong>. The town tries to eliminate all mafia members, while the mafia tries to eliminate enough townspeople to gain majority control.</p>
+        </div>
+        <div class="rules-card">
+          <h3>🌙 Night Phase</h3>
+          <p>Everyone "closes their eyes." Special roles wake up and take actions:</p>
+          <ul>
+            <li><strong>Mafia</strong> choose a target to kill</li>
+            <li><strong>Doctor</strong> chooses someone to save</li>
+            <li><strong>Detective</strong> investigates a player</li>
+            <li><strong>Other roles</strong> use their special abilities</li>
+          </ul>
+        </div>
+        <div class="rules-card">
+          <h3>☀️ Day Phase</h3>
+          <p>The results of the night are revealed. Players discuss who might be mafia. Any player can nominate someone, and if seconded, a vote is held. The player with the most votes is eliminated.</p>
+        </div>
+        <div class="rules-card">
+          <h3>🔄 Cycle</h3>
+          <p>Day and night alternate until one side wins. Eliminated players cannot speak but can observe the game.</p>
+        </div>
+      </div>
+
+      <!-- Roles Tab -->
+      <div class="tab-content" id="tab-roles">
+        <div class="roles-filter">
+          <button class="filter-btn active" onclick="filterRoles('all', this)">All</button>
+          <button class="filter-btn" onclick="filterRoles('town', this)">🏘️ Town</button>
+          <button class="filter-btn" onclick="filterRoles('mafia', this)">🔪 Mafia</button>
+          <button class="filter-btn" onclick="filterRoles('neutral', this)">⚖️ Neutral</button>
+        </div>
+        <div class="roles-list" id="rules-roles-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Winning Tab -->
+      <div class="tab-content" id="tab-winning">
+        <div class="rules-card win-card town-win">
+          <h3>🏘️ Town Wins When...</h3>
+          <p>All Mafia members and Serial Killers are eliminated from the game.</p>
+        </div>
+        <div class="rules-card win-card mafia-win">
+          <h3>🔪 Mafia Wins When...</h3>
+          <p>Mafia members equal or outnumber the Town players (Mafia gains majority control).</p>
+        </div>
+        <div class="rules-card win-card jester-win">
+          <h3>🃏 Jester Wins When...</h3>
+          <p>The Jester is voted out and eliminated by the Town during the day phase.</p>
+        </div>
+        <div class="rules-card win-card sk-win">
+          <h3>🔪 Serial Killer Wins When...</h3>
+          <p>The Serial Killer is the last player standing, having killed all others.</p>
+        </div>
+      </div>
+
+      <!-- Tips Tab -->
+      <div class="tab-content" id="tab-tips">
+        <div class="rules-card">
+          <h3>💡 Town Strategy</h3>
+          <ul>
+            <li>Pay attention to who votes together</li>
+            <li>Watch for players who are suspiciously quiet</li>
+            <li>Trust the Detective's findings (unless they could be Godfather)</li>
+            <li>Don't eliminate players without solid reasoning</li>
+          </ul>
+        </div>
+        <div class="rules-card">
+          <h3>🎭 Mafia Strategy</h3>
+          <ul>
+            <li>Blend in with the Town during discussions</li>
+            <li>Vote with the majority to avoid suspicion</li>
+            <li>Claim a Town role if accused</li>
+            <li>Coordinate kills to eliminate key roles first</li>
+          </ul>
+        </div>
+        <div class="rules-card">
+          <h3>🔍 Detective Tips</h3>
+          <ul>
+            <li>Investigate players you're unsure about</li>
+            <li>Be careful revealing your role – Mafia will target you</li>
+            <li>Consider revealing info gradually to stay safe</li>
+          </ul>
+        </div>
+        <div class="rules-card">
+          <h3>🏥 Doctor Tips</h3>
+          <ul>
+            <li>Self-heal on the first night to stay alive</li>
+            <li>Try to predict who Mafia will target</li>
+            <li>Protect confirmed town roles like the Detective</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST NOTIFICATION ========== -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ========== MODAL ========== -->
+  <div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal" id="modal">
+      <div class="modal-header" id="modal-header"></div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- PeerJS for P2P Multiplayer -->
+  <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="roles.js"></script>
+  <script src="network.js"></script>
+  <script src="game.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
