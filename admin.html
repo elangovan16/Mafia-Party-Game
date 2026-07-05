@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - MAFIA Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <div class="header-left">
+      <span class="header-logo">🛠️</span>
+      <div>
+        <h1 class="header-title">MAFIA — Admin Panel</h1>
+        <p class="header-sub">Developer and Tester Dashboard</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="status-badge" id="status-badge">● IDLE</span>
+      <a href="index.html" class="btn-header">← Back to Game</a>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">⚡ Quick Launch</h3>
+        <button class="sidebar-btn btn-green" onclick="Admin.quickStart(5)">▶ 5-Player Game</button>
+        <button class="sidebar-btn btn-green" onclick="Admin.quickStart(8)">▶ 8-Player Game</button>
+        <button class="sidebar-btn btn-green" onclick="Admin.quickStart(12)">▶ 12-Player Game</button>
+        <button class="sidebar-btn btn-purple" onclick="Admin.quickStartCustom()">⚙ Custom Launch</button>
+      </div>
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">🎮 Phase Controls</h3>
+        <button class="sidebar-btn" onclick="Admin.gotoNight()">🌙 Force Night</button>
+        <button class="sidebar-btn" onclick="Admin.gotoDay()">☀️ Force Day</button>
+        <button class="sidebar-btn" onclick="Admin.gotoVote()">⚖️ Force Vote</button>
+        <button class="sidebar-btn btn-red" onclick="Admin.forceWin('town')">🏆 Town Win</button>
+        <button class="sidebar-btn btn-red" onclick="Admin.forceWin('mafia')">🔪 Mafia Win</button>
+      </div>
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">📊 Game State</h3>
+        <div class="state-grid" id="state-grid">
+          <div class="state-item"><span class="state-label">Phase</span><span class="state-val" id="sv-phase">—</span></div>
+          <div class="state-item"><span class="state-label">Round</span><span class="state-val" id="sv-round">0</span></div>
+          <div class="state-item"><span class="state-label">Day</span><span class="state-val" id="sv-day">0</span></div>
+          <div class="state-item"><span class="state-label">Night</span><span class="state-val" id="sv-night">0</span></div>
+          <div class="state-item"><span class="state-label">Alive</span><span class="state-val" id="sv-alive">0</span></div>
+          <div class="state-item"><span class="state-label">Dead</span><span class="state-val" id="sv-dead">0</span></div>
+        </div>
+        <button class="sidebar-btn" onclick="Admin.refreshState()" style="margin-top:0.5rem">🔄 Refresh</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="Admin.switchTab('tab-setup', this)">👥 Player Setup</button>
+        <button class="tab-btn" onclick="Admin.switchTab('tab-players', this)">🎭 Live Players</button>
+        <button class="tab-btn" onclick="Admin.switchTab('tab-night', this)">🌙 Night Tester</button>
+        <button class="tab-btn" onclick="Admin.switchTab('tab-vote', this)">⚖️ Vote Tester</button>
+        <button class="tab-btn" onclick="Admin.switchTab('tab-roles', this)">📖 Role Browser</button>
+        <button class="tab-btn" onclick="Admin.switchTab('tab-log', this)">📋 Event Log</button>
+      </div>
+
+      <!-- TAB: PLAYER SETUP -->
+      <div class="tab-content active" id="tab-setup">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>👥 Dummy Player Generator</h2>
+            <p>Add dummy players with fake names to test any game scenario.</p>
+          </div>
+          <div class="setup-grid">
+            <div class="card">
+              <h3 class="card-title">🎲 Auto-Generate Players</h3>
+              <div class="form-row"><label>Count</label><input type="number" id="gen-count" class="admin-input" value="8" min="1" max="16" /></div>
+              <div class="form-row">
+                <label>Name Style</label>
+                <select id="gen-style" class="admin-select">
+                  <option value="classic">Classic (Alice, Bob…)</option>
+                  <option value="medieval">Medieval (Arthur, Merlin…)</option>
+                  <option value="mystery">Mystery (Shadow, Ghost…)</option>
+                  <option value="random">Random Mix</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Role Distribution</label>
+                <select id="gen-roles" class="admin-select">
+                  <option value="preset">Auto Preset</option>
+                  <option value="all_town">All Town</option>
+                  <option value="all_mafia">Heavy Mafia</option>
+                  <option value="custom">Custom (below)</option>
+                </select>
+              </div>
+              <button class="btn-action btn-green" onclick="Admin.generatePlayers()">⚡ Generate and Add Players</button>
+            </div>
+            <div class="card">
+              <h3 class="card-title">✏️ Add Individual Player</h3>
+              <div class="form-row"><label>Name</label><input type="text" id="add-name" class="admin-input" placeholder="Player name..." maxlength="20" /></div>
+              <div class="form-row">
+                <label>Role (optional)</label>
+                <select id="add-role" class="admin-select"><option value="auto">Auto-Assign</option></select>
+              </div>
+              <div class="form-row">
+                <label>Is Host?</label>
+                <input type="checkbox" id="add-ishost" style="width:auto;accent-color:var(--a-purple)" />
+              </div>
+              <button class="btn-action" onclick="Admin.addPlayer()">➕ Add Player</button>
+            </div>
+            <div class="card full-width">
+              <h3 class="card-title">🎭 Custom Role Configuration</h3>
+              <div class="role-config-grid" id="role-config-grid"></div>
+              <div class="form-row" style="margin-top:1rem">
+                <button class="btn-action btn-purple" onclick="Admin.applyCustomRoles()">✅ Apply Role Config</button>
+                <button class="btn-action" onclick="Admin.resetRoleConfig()" style="background:var(--a-surface2)">🔄 Reset to Preset</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:1.5rem">
+            <div class="card-header-row">
+              <h3 class="card-title">📋 Player Queue <span class="badge" id="queue-count">0</span></h3>
+              <div>
+                <button class="btn-small btn-red" onclick="Admin.clearPlayers()">🗑 Clear All</button>
+                <button class="btn-small btn-green" onclick="Admin.launchGame()">🚀 Launch Game</button>
+              </div>
+            </div>
+            <div class="player-queue" id="player-queue"><p class="empty-hint">No players yet. Generate or add players above.</p></div>
+          </div>
+          <div class="card" style="margin-top:1.5rem">
+            <h3 class="card-title">⚙️ Game Settings</h3>
+            <div class="settings-row">
+              <div class="form-row"><label>Day Time (sec)</label><input type="number" id="cfg-daytime" class="admin-input" value="30" min="0" max="600" /></div>
+              <div class="form-row"><label>Night Time (sec)</label><input type="number" id="cfg-nighttime" class="admin-input" value="15" min="0" max="120" /></div>
+              <div class="form-row"><label>Sheriff Badge</label><input type="checkbox" id="cfg-sheriff" checked style="width:auto;accent-color:var(--a-purple)" /></div>
+              <div class="form-row"><label>Last Will</label><input type="checkbox" id="cfg-lastwill" style="width:auto;accent-color:var(--a-purple)" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LIVE PLAYERS -->
+      <div class="tab-content" id="tab-players">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🎭 Live Player Inspector</h2>
+            <p>Inspect every player's role, status, and manipulate game state mid-game.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn-small" onclick="Admin.refreshPlayers()">🔄 Refresh</button>
+            <button class="btn-small btn-red" onclick="Admin.killAll()">💀 Kill All</button>
+            <button class="btn-small btn-green" onclick="Admin.reviveAll()">💚 Revive All</button>
+            <button class="btn-small btn-purple" onclick="Admin.shuffleRoles()">🎲 Shuffle Roles</button>
+          </div>
+          <div class="players-inspector" id="players-inspector">
+            <p class="empty-hint">No game running. Launch a game from the Player Setup tab.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: NIGHT TESTER -->
+      <div class="tab-content" id="tab-night">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🌙 Night Action Tester</h2>
+            <p>Manually submit night actions for any role and resolve them.</p>
+          </div>
+          <div class="night-tester-grid">
+            <div class="card">
+              <h3 class="card-title">🎯 Submit Night Action</h3>
+              <div class="form-row"><label>Actor (Player)</label><select id="night-actor" class="admin-select"></select></div>
+              <div class="form-row">
+                <label>Action Type</label>
+                <select id="night-action-type" class="admin-select">
+                  <option value="mafia_kill">Mafia Kill</option>
+                  <option value="investigate">Investigate (Detective)</option>
+                  <option value="heal">Heal (Doctor)</option>
+                  <option value="roleblock">Roleblock (Escort/Consort)</option>
+                  <option value="sk_kill">SK Kill (Serial Killer)</option>
+                  <option value="guard">Guard (Bodyguard)</option>
+                  <option value="consigliere">Identify (Consigliere)</option>
+                  <option value="vigilante">Shoot (Vigilante)</option>
+                </select>
+              </div>
+              <div class="form-row"><label>Target</label><select id="night-target" class="admin-select"></select></div>
+              <button class="btn-action btn-purple" onclick="Admin.submitNightAction()">⚡ Submit Action</button>
+              <button class="btn-action btn-red" style="margin-top:0.5rem" onclick="Admin.resolveNight()">🔮 Resolve Night</button>
+            </div>
+            <div class="card">
+              <h3 class="card-title">📋 Pending Night Actions</h3>
+              <div class="pending-actions" id="pending-actions"><p class="empty-hint">No actions submitted yet.</p></div>
+              <button class="btn-action" onclick="Admin.clearNightActions()" style="background:var(--a-surface2);margin-top:0.75rem">🗑 Clear Actions</button>
+            </div>
+            <div class="card full-width">
+              <h3 class="card-title">🌅 Night Resolution Result</h3>
+              <div class="resolution-result" id="resolution-result"><p class="empty-hint">Resolve a night to see results here.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: VOTE TESTER -->
+      <div class="tab-content" id="tab-vote">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>⚖️ Vote and Elimination Tester</h2>
+            <p>Simulate voting, nominations, and eliminations directly.</p>
+          </div>
+          <div class="vote-tester-grid">
+            <div class="card">
+              <h3 class="card-title">🗳️ Cast Vote</h3>
+              <div class="form-row"><label>Voter</label><select id="vote-voter" class="admin-select"></select></div>
+              <div class="form-row"><label>Target</label><select id="vote-target" class="admin-select"></select></div>
+              <button class="btn-action btn-purple" onclick="Admin.castVote()">⚖️ Cast Vote</button>
+              <button class="btn-action btn-red" style="margin-top:0.5rem" onclick="Admin.resolveVote()">✂️ Resolve Vote</button>
+            </div>
+            <div class="card">
+              <h3 class="card-title">💀 Direct Elimination</h3>
+              <div class="form-row"><label>Player</label><select id="elim-target" class="admin-select"></select></div>
+              <div class="form-row">
+                <label>Cause</label>
+                <select id="elim-cause" class="admin-select">
+                  <option value="voted_out">Voted Out</option>
+                  <option value="night_kill">Night Kill</option>
+                  <option value="sheriff">Shot by Sheriff</option>
+                </select>
+              </div>
+              <button class="btn-action btn-red" onclick="Admin.eliminatePlayer()">💀 Eliminate</button>
+            </div>
+            <div class="card full-width">
+              <h3 class="card-title">📊 Vote Tally</h3>
+              <div id="admin-vote-tally" class="vote-tally-display"><p class="empty-hint">No votes yet.</p></div>
+              <button class="btn-action" onclick="Admin.clearVotes()" style="background:var(--a-surface2);margin-top:0.75rem">🗑 Clear Votes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ROLE BROWSER -->
+      <div class="tab-content" id="tab-roles">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>📖 Role Browser</h2>
+            <p>View all roles, their properties, and test assigning them to players.</p>
+          </div>
+          <div class="roles-filter-bar">
+            <button class="role-filter-btn active" onclick="Admin.filterRoles('all', this)">All</button>
+            <button class="role-filter-btn" onclick="Admin.filterRoles('town', this)">🏘️ Town</button>
+            <button class="role-filter-btn" onclick="Admin.filterRoles('mafia', this)">🔪 Mafia</button>
+            <button class="role-filter-btn" onclick="Admin.filterRoles('neutral', this)">⚖️ Neutral</button>
+          </div>
+          <div class="roles-browser" id="roles-browser"></div>
+        </div>
+      </div>
+
+      <!-- TAB: EVENT LOG -->
+      <div class="tab-content" id="tab-log">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>📋 Event Log</h2>
+            <p>Real-time log of all game events and admin actions.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn-small btn-red" onclick="Admin.clearLog()">🗑 Clear Log</button>
+            <button class="btn-small" onclick="Admin.exportLog()">📥 Export</button>
+            <label class="toggle-row"><input type="checkbox" id="log-auto-scroll" checked /><span>Auto-scroll</span></label>
+          </div>
+          <div class="event-log" id="event-log">
+            <div class="log-entry log-info">[ADMIN] Admin panel loaded. Ready to test.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="admin-toast-container" id="admin-toast-container"></div>
+  <div class="admin-modal-overlay" id="admin-modal-overlay" style="display:none">
+    <div class="admin-modal" id="admin-modal">
+      <div class="admin-modal-header" id="admin-modal-header"></div>
+      <div class="admin-modal-body" id="admin-modal-body"></div>
+      <div class="admin-modal-footer" id="admin-modal-footer"></div>
+    </div>
+  </div>
+
+  <script src="roles.js"></script>
+  <script src="network.js"></script>
+  <script src="game.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

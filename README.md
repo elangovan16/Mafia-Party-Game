@@ -35,6 +35,7 @@ The Town wins by eliminating all Mafia. The Mafia wins by gaining majority contr
 - 📜 **Rules & Roles** tab — in-game reference with filters
 - 📋 **QR Code** in lobby — scan to join instantly
 - 📲 **PWA ready** — can be installed on phones like a native app
+- 🛠️ **Admin / Dev Panel** (`admin.html`) — dummy player generator, live game inspector, night/vote tester, role browser
 
 ---
 
@@ -148,6 +149,10 @@ Mafia Party Game/
 ├── network.js        ← P2P multiplayer layer (PeerJS/WebRTC wrapper)
 ├── ui.js             ← UI controller: screen switching, timers, events
 │
+├── admin.html        ← Admin / Developer testing panel
+├── admin.css         ← Admin panel styles (dark purple theme)
+├── admin.js          ← Admin panel logic (dummy players, game inspector, testers)
+│
 ├── manifest.json     ← PWA manifest (install on phone like native app)
 ├── README.md         ← This file
 │
@@ -253,6 +258,31 @@ All colors are CSS variables in `styles.css` → `:root`:
 --secondary: #7c3aed;  /* purple */
 ```
 Change these two to completely retheme the game.
+
+---
+
+## 🛠️ Admin / Developer Panel
+
+Open `admin.html` directly in a browser (or click **🛠️ Admin / Dev** on the home screen).
+
+> **No server needed** — the admin panel uses the same `roles.js` / `game.js` / `network.js` files as the main game. It stubs out the DOM-dependent `UI.appendLog` so `game.js` runs cleanly in isolation.
+
+### Features
+
+| Tab | What it does |
+|-----|--------------|
+| **👥 Player Setup** | Generate 1–16 dummy players (Classic / Medieval / Mystery / Random names), add individual players with optional forced roles, configure exact role counts, set game settings (timers, badges), launch a full game |
+| **🎭 Live Players** | Inspect every player's role, team, alive/dead status, kill/revive individuals, bulk kill/revive all, shuffle roles randomly, change a player's role mid-game via dropdown |
+| **🌙 Night Tester** | Submit any night action (Mafia kill, Investigate, Heal, Roleblock, SK Kill, Guard, Consigliere, Vigilante) for any actor → target pair, view pending queue, resolve night and see results |
+| **⚖️ Vote Tester** | Cast votes between any players, view live tally bars, resolve vote to eliminate, or directly eliminate any player with a custom cause |
+| **📖 Role Browser** | All 17 roles with icon, description, ability, team badge, and meta tags (priority, night action, max count) — filterable by team |
+| **📋 Event Log** | Timestamped, color-coded log of every admin action and game event — exportable to `.txt` |
+
+### Sidebar Quick Actions
+- **▶ 5 / 8 / 12-Player Game** — one-click game launch with auto-generated dummy players
+- **Force Night / Day / Vote** — jump to any game phase instantly
+- **Force Town Win / Mafia Win** — trigger end-game screen for testing
+- **Live state display** — phase, round, day count, night count, alive/dead counts
 
 ---
 

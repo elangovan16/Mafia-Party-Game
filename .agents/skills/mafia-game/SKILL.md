@@ -54,6 +54,14 @@ No server, no build, no install required.
   <script src="ui.js">       <!-- last: UI controller (uses all above) -->
   ```
 
+**Admin panel load order** (in `admin.html`):
+  ```html
+  <script src="roles.js">    <!-- same as above -->
+  <script src="network.js">
+  <script src="game.js">
+  <script src="admin.js">    <!-- replaces ui.js; stubs window.UI -->
+  ```
+
 ---
 
 ### `styles.css`
@@ -73,6 +81,87 @@ No server, no build, no install required.
 - Screen switching animation: `.screen` uses `opacity + transform`, `.screen.active` makes it visible
 - Role team colors: `.team-town` (green), `.team-mafia` (red), `.team-neutral` (gold)
 - Responsive breakpoints: `360px` (tiny phones), `600px` (tablets and up)
+
+---
+
+### `admin.html` + `admin.css` + `admin.js`
+**Standalone developer/testing panel — open `admin.html` directly in a browser.**
+
+Does NOT depend on `ui.js` or any DOM state from `index.html`.
+On init, `admin.js` stubs `window.UI.appendLog` so `game.js` never crashes without the game DOM.
+
+#### 6 Tabs:
+| Tab ID | Purpose |
+|--------|---------|
+| `tab-setup` | Dummy player generator (name styles, counts, forced roles), manual add, role config grid, settings, launch |
+| `tab-players` | Live player inspector: role, alive/dead, kill/revive/change-role per player, bulk actions |
+| `tab-night` | Night action tester: submit any action type for any actor→target, view pending queue, resolve and see results |
+| `tab-vote` | Vote tester: cast votes, view tally bars, resolve vote, direct elimination |
+| `tab-roles` | Role browser: all roles with meta tags, filterable by team |
+| `tab-log` | Timestamped event log, color-coded, exportable to .txt |
+
+#### Key `Admin` API (public module returned from IIFE):
+```js
+// Tab & state
+Admin.switchTab(id, btn)          // switches active tab
+Admin.refreshState()              // updates sidebar state display
+
+// Player queue (pre-game)
+Admin.generatePlayers()           // reads gen-count/gen-style/gen-roles inputs, fills pendingPlayers[]
+Admin.addPlayer()                 // reads add-name/add-role/add-ishost inputs
+Admin.removePlayer(id)            // removes from pendingPlayers[]
+Admin.clearPlayers()              // empties queue
+Admin.launchGame()                // calls Game.initGame() with pendingPlayers + settings
+Admin.quickStart(count)           // auto-generates N classic-name players and launches
+
+// Phase controls
+Admin.gotoNight()                 // sets state.phase = 'night'
+Admin.gotoDay()                   // calls Game.startDay()
+Admin.gotoVote()                  // sets state.phase = 'vote'
+Admin.forceWin(team)              // shows win modal for 'town' or 'mafia'
+
+// Live player manipulation
+Admin.refreshPlayers()            // re-renders the player inspector grid
+Admin.killPlayer(id)              // sets p.alive = false
+Admin.revivePlayer(id)            // sets p.alive = true
+Admin.changeRole(id, roleId)      // swaps p.role to ROLES[roleId]
+Admin.killAll()                   // kills every player
+Admin.reviveAll()                 // revives every player
+Admin.shuffleRoles()              // Fisher-Yates shuffle of roles across players
+Admin.inspectPlayer(id)           // shows modal with full player state
+Admin.eliminatePlayer(id, cause)  // calls Game.eliminatePlayer()
+
+// Night tester
+Admin.submitNightAction()         // reads night-actor/night-action-type/night-target
+Admin.resolveNight()              // calls Game.resolveNightActions(), renders results
+Admin.clearNightActions()         // empties pendingNightActions[]
+
+// Vote tester
+Admin.castVote()                  // reads vote-voter/vote-target, calls Game.castVote()
+Admin.resolveVote()               // calls Game.resolveVote()
+Admin.clearVotes()                // empties adminVotes{}, resets voteCount on players
+
+// Role browser
+Admin.filterRoles(team, btn)      // shows/hides .role-card by data-team
+
+// Log
+Admin.clearLog()                  // empties event-log DOM + logEntries[]
+Admin.exportLog()                 // downloads logEntries as .txt file
+```
+
+#### Name styles available:
+```js
+NAMES.classic   // Alice, Bob, Carol, Dave…
+NAMES.medieval  // Arthur, Merlin, Lancelot…
+NAMES.mystery   // Shadow, Ghost, Cipher…
+NAMES.random    // Ajax, Blaze, Colt…
+```
+
+#### How to add a new admin feature:
+1. Add the HTML element (select/button/div) to the relevant tab in `admin.html`
+2. Add the handler function inside the `Admin` IIFE in `admin.js`
+3. Return it from the public `return {}` at the bottom
+4. Wire it via `onclick="Admin.myFunction()"` in the HTML
 
 ---
 
@@ -388,3 +477,19 @@ QRCode.js: https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
 Fonts:     https://fonts.googleapis.com/css2?family=Cinzel...
 ```
 All game features degrade gracefully if CDN fails (offline fonts, no QR code, no multiplayer → falls back to pass-and-play).
+
+---
+
+## Admin Panel Quick Reference
+
+- **Entry point:** open `admin.html` directly in any browser
+- **Access from game:** subtle `🛠️ Admin / Dev` link at bottom of home screen
+- **No server / no build required** — same as the main game
+- **Does NOT interfere** with `index.html` — completely separate HTML file
+- The admin panel stubs `window.UI` on load so `game.js` never throws
+- `pendingPlayers[]` = player queue before game starts; `Game.getPlayers()` = live players after launch
+- `customRoleConfig = {}` means "use auto preset"; non-empty means exact role counts
+- Night actions submitted via `Admin.submitNightAction()` are also forwarded to `Game.submitNightAction()` so `resolveNightActions()` sees them
+- Votes submitted via `Admin.castVote()` are stored in both `adminVotes{}` (for tally UI) and `Game.castVote()` (for resolve)
+- `Admin.eliminatePlayer(id, cause)` can be called from the Vote Tester tab dropdown OR directly from a player card button (passing the id argument)
+
