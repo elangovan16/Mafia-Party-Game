@@ -1406,6 +1406,16 @@ body {
   line-height: 1.6;
 }
 
+.death-note {
+  font-size: 0.85rem;
+  color: var(--accent-red);
+  font-style: italic;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-left: 2px solid var(--accent-red);
+  background: rgba(229, 62, 62, 0.1);
+}
+
 /* ─── Win Screen ─── */
 #screen-win {
   background: radial-gradient(ellipse at center, #0a1f0a 0%, #0d0618 60%);

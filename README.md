@@ -127,7 +127,7 @@ Configurable before each game:
 
 | Setting | Options |
 |---------|---------|
-| Number of Players | 5 – 16 |
+| Number of Players | 5 – 16 (Online mode) / Dynamic by added players (Pass & Play mode) |
 | Day Discussion Time | 1 min / 2 min / 3 min / 5 min / No limit |
 | Night Action Time | 20s / 30s / 45s / 1 min |
 | Sheriff's Badge | Enable/disable the Sheriff role's shoot ability |

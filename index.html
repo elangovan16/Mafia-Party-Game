@@ -79,11 +79,7 @@
           <label>Organizer / Narrator Name</label>
           <input type="text" id="local-organizer-name" class="input-field" placeholder="e.g. Alex (the host)..." maxlength="20" value="Organizer" />
         </div>
-        <div class="setup-section">
-          <label>Number of Players <span id="local-player-count-display" class="badge">6</span></label>
-          <input type="range" id="local-player-count" min="5" max="16" value="6" class="slider" oninput="updateLocalPlayerCount(this.value)" />
-          <div class="slider-labels"><span>5</span><span>16</span></div>
-        </div>
+
         <div class="setup-section">
           <label>Roles in Game</label>
           <div class="roles-grid" id="local-roles-grid">
@@ -97,9 +93,11 @@
           </div>
         </div>
         <div class="recommended-roles" id="local-recommended-roles"></div>
-        <button class="btn btn-local glow-local full-width" onclick="goToLocalPlayerAdd()">
-          <span class="btn-icon">👥</span> Next: Add Players
-        </button>
+        <div class="local-start-wrap">
+          <button class="btn btn-local glow-local full-width" id="btn-start-local" onclick="startLocalGame()">
+            <span class="btn-icon">⚡</span> Start Game
+          </button>
+        </div>
       </div>
 
       <!-- Step 2: Add Players -->
@@ -122,7 +120,7 @@
 
         <div class="local-players-needed-bar">
           <span id="local-players-added-count" class="badge">0</span>
-          <span class="local-needed-text"> / <span id="local-target-count">6</span> players added</span>
+          <span class="local-needed-text"> players added (5–16)</span>
           <div class="local-progress-bar">
             <div class="local-progress-fill" id="local-progress-fill"></div>
           </div>
@@ -133,10 +131,10 @@
         </div>
 
         <div class="local-start-wrap">
-          <button class="btn btn-local glow-local full-width" id="btn-start-local" onclick="startLocalGame()" disabled>
-            <span class="btn-icon">⚡</span> Start Game
+          <button class="btn btn-local glow-local full-width" id="btn-next-local-config" onclick="goToLocalConfig()" disabled>
+            <span class="btn-icon">⚙️</span> Next: Configure Game
           </button>
-          <p class="start-hint" id="local-start-hint">Add at least 5 players to start</p>
+          <p class="start-hint" id="local-start-hint">Add at least 5 players to continue</p>
         </div>
       </div>
     </div>
@@ -349,6 +347,9 @@
         <div class="target-list" id="target-list">
           <!-- Dynamic player list -->
         </div>
+        <div class="night-note-wrap" id="night-note-wrap" style="display:none; margin-top: 1rem;">
+          <input type="text" id="night-action-note" class="input-field" placeholder="Leave a Death Note (optional)..." maxlength="80" autocomplete="off" />
+        </div>
         <div class="action-timer" id="action-timer">
           <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
           <span id="timer-text">30</span>
@@ -414,9 +415,14 @@
         <div class="log-entries" id="log-entries"></div>
       </div>
 
-      <button class="btn btn-warning full-width" onclick="triggerVote()">
-        <span class="btn-icon">⚖️</span> Call for Vote
-      </button>
+      <div class="day-controls" style="display:flex; gap:10px; margin-top: 1rem;">
+        <button class="btn btn-secondary flex-1" onclick="showRolesInPlay()">
+          <span class="btn-icon">📜</span> Roles in Play
+        </button>
+        <button class="btn btn-warning flex-1" onclick="triggerVote()">
+          <span class="btn-icon">⚖️</span> Call for Vote
+        </button>
+      </div>
     </div>
   </div>
 
@@ -620,6 +626,10 @@
   <script src="roles.js"></script>
   <script src="network.js"></script>
   <script src="game.js"></script>
-  <script src="ui.js"></script>
+  <script src="js/ui/core.js"></script>
+  <script src="js/ui/setup.js"></script>
+  <script src="js/ui/lobby.js"></script>
+  <script src="js/ui/game.js"></script>
+  <script src="js/ui/network_handler.js"></script>
 </body>
 </html>

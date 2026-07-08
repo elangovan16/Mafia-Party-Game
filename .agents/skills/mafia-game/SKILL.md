@@ -448,6 +448,7 @@ roleBack.style.background  = `linear-gradient(135deg, #1a0f2e, ${role.color}22)`
 ### Local Pass & Play Mode (Organizer/Narrator Flow)
 In Local Pass & Play mode:
 - One player acts as the **Organizer / Narrator** (name stored in `organizerName`).
+- **Player Count**: Determined dynamically by the number of players actually added to the list (minimum 5, maximum 16), rather than through a pre-game slider.
 - **Role Reveal**: Handled via `#screen-role-cover` (State A and State B). The Organizer calls the player, hits "Show Role", let's them view their card privately, asks them to close their eyes, and then hits "Next Player" (confirming the player closed their eyes).
 - **Night Phase**: The Organizer screen shows a narrator instruction block (`#narrator-step`) before each role's turn. The Organizer announces the role turn aloud (e.g. *"Doctor, open your eyes"*), clicks "Show Action" to log choices silently, and then announces *"Doctor, close your eyes"* before hitting "Next".
 - **Timers**: Setting a timer value to `0` represents "No limit" (supported on both day and night phases). When the night timer is set to `0`, the visual action timer element is hidden entirely.

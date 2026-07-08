@@ -151,6 +151,53 @@ const ROLES = {
     canSelfTarget: false,
   },
 
+  rambo: {
+    id: 'rambo',
+    name: 'Rambo',
+    icon: '💥',
+    team: 'town',
+    color: '#0ea5e9',
+    description: 'A trigger-happy Town member with exactly one bullet.',
+    ability: '💥 Once per game, shoot a player at night. Wasting it makes you a regular Villager.',
+    nightAction: 'rambo_kill',
+    prompt: 'Choose someone to shoot tonight (1 bullet):',
+    maxPerGame: 1,
+    minPlayers: 7,
+    priority: 7,
+    canSelfTarget: false,
+    usesLeft: 1,
+  },
+
+  lover: {
+    id: 'lover',
+    name: 'Lover',
+    icon: '💕',
+    team: 'town',
+    color: '#f472b6',
+    description: 'Bound by love to another player.',
+    ability: '💕 You have no night ability, but you share a soulbound connection. If a Lover dies, you die instantly of heartbreak.',
+    nightAction: null,
+    maxPerGame: 2,
+    minPlayers: 8,
+    priority: 10,
+    canSelfTarget: false,
+  },
+
+  saint: {
+    id: 'saint',
+    name: 'Saint',
+    icon: '🕊️',
+    team: 'town',
+    color: '#fde047',
+    description: 'A holy figure. Whoever votes them out faces divine retribution.',
+    ability: '🕊️ If the Town mistakenly votes you out during the day, every player who voted to eliminate you dies instantly alongside you.',
+    nightAction: null,
+    maxPerGame: 1,
+    minPlayers: 7,
+    priority: 10,
+    canSelfTarget: false,
+  },
+
   // ── MAFIA ROLES ─────────────────────────────────────────────────
   mafioso: {
     id: 'mafioso',
@@ -214,6 +261,22 @@ const ROLES = {
     maxPerGame: 1,
     minPlayers: 8,
     priority: 3,
+    canSelfTarget: false,
+  },
+
+  framer: {
+    id: 'framer',
+    name: 'Framer',
+    icon: '🖼️',
+    team: 'mafia',
+    color: '#fb7185',
+    description: 'A Mafia operative who frames innocent players.',
+    ability: '🖼️ Each night, choose a player to frame. If investigated by the Detective tonight, they will appear guilty.',
+    nightAction: 'frame',
+    prompt: 'Choose someone to frame tonight:',
+    maxPerGame: 1,
+    minPlayers: 7,
+    priority: 4,
     canSelfTarget: false,
   },
 
@@ -286,14 +349,32 @@ const ROLES = {
     winCondition: 'survive',
     vests: 4,
   },
+
+  arsonist: {
+    id: 'arsonist',
+    name: 'Arsonist',
+    icon: '🔥',
+    team: 'neutral',
+    color: '#f97316',
+    description: 'A pyromaniac who wants to watch the world burn.',
+    ability: '🔥 Each night, you may douse a player in gasoline, OR ignite all previously doused players. Win by being the last standing.',
+    nightAction: 'arsonist_action',
+    prompt: 'Choose someone to douse (Target YOURSELF to ignite all):',
+    maxPerGame: 1,
+    minPlayers: 9,
+    priority: 6,
+    canSelfTarget: true,
+    winCondition: 'last_standing',
+    note: 'Target yourself to ignite all doused players.',
+  },
 };
 
 // Role display order for UI
 const ROLE_ORDER = [
   'villager', 'detective', 'doctor', 'sheriff', 'mayor',
-  'bodyguard', 'vigilante', 'escort', 'spy',
-  'mafioso', 'godfather', 'consort', 'consigliere',
-  'jester', 'serialKiller', 'executioner', 'survivor'
+  'bodyguard', 'vigilante', 'rambo', 'escort', 'spy', 'lover', 'saint',
+  'mafioso', 'godfather', 'consort', 'consigliere', 'framer',
+  'jester', 'serialKiller', 'arsonist', 'executioner', 'survivor'
 ];
 
 // Recommended role presets by player count
@@ -407,6 +488,13 @@ const SETTINGS_CONFIG = {
     desc: 'Allows players to write a final note revealed upon their elimination.',
     type: 'toggle',
     default: false
+  },
+  revealRoles: {
+    id: 'reveal-roles',
+    label: 'Reveal Roles on Death',
+    desc: 'If disabled, the roles of eliminated players will remain a secret.',
+    type: 'toggle',
+    default: true
   }
 };
 

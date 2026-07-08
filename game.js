@@ -132,10 +132,11 @@ const Game = (function () {
     state.nightActionQueue = [];
 
     // Group mafia kills as one team action
+    const mafiaAll = state.players.filter(p => p.role.team === 'mafia');
     const mafiaAlive = getMafiaPlayers();
-    if (mafiaAlive.length > 0) {
+    if (mafiaAll.length > 0) {
       // Add godfather or first mafioso as representative
-      const mafiaRep = mafiaAlive.find(p => p.role.id === 'godfather') || mafiaAlive[0];
+      const mafiaRep = mafiaAlive.find(p => p.role.id === 'godfather') || mafiaAlive[0] || mafiaAll[0];
       state.nightActionQueue.push({
         playerId: mafiaRep.id,
         actionType: 'mafia_kill',
@@ -145,10 +146,10 @@ const Game = (function () {
     }
 
     // Individual roles with night actions (by priority)
-    const roleActionOrder = ['escort', 'consort', 'consigliere', 'serialKiller', 'doctor', 'bodyguard', 'vigilante', 'detective', 'spy', 'survivor'];
+    const roleActionOrder = ['escort', 'consort', 'framer', 'consigliere', 'serialKiller', 'arsonist', 'doctor', 'bodyguard', 'vigilante', 'rambo', 'detective', 'spy', 'survivor'];
 
     for (const roleId of roleActionOrder) {
-      const player = state.players.find(p => p.role.id === roleId && p.alive);
+      const player = state.players.find(p => p.role.id === roleId);
       if (player && player.role.nightAction) {
         state.nightActionQueue.push({
           playerId: player.id,
@@ -169,8 +170,8 @@ const Game = (function () {
     return state.nightActionQueue[state.nightQueueIndex];
   }
 
-  function submitNightAction(actorId, targetId, actionType) {
-    state.nightActions[actorId] = { targetId, actionType };
+  function submitNightAction(actorId, targetId, actionType, note = null) {
+    state.nightActions[actorId] = { targetId, actionType, note };
     state.nightQueueIndex++;
   }
 
@@ -189,6 +190,7 @@ const Game = (function () {
       guardianDied: null,
       vigilanteKill: null,
       skKill: null,
+      deathNotes: {}, // { playerId: "note text" }
     };
 
     // Step 1: Roleblocks (escort, consort)
@@ -196,7 +198,7 @@ const Game = (function () {
     for (const [actorId, action] of Object.entries(actions)) {
       if (action.actionType === 'roleblock') {
         const target = getPlayer(action.targetId);
-        if (target && target.alive) {
+        if (target && target.alive && !target.role.immuneToRoleblock) {
           roleblocked.add(action.targetId);
           results.roleblocked.push(action.targetId);
           addLog(`${getPlayer(actorId)?.name} roleblocked ${target.name}`, false);
@@ -214,18 +216,22 @@ const Game = (function () {
 
     // Step 3: Mafia kill
     let mafiaKillTarget = null;
+    let mafiaKillNote = null;
     for (const [actorId, action] of Object.entries(actions)) {
       if (action.actionType === 'mafia_kill' && !roleblocked.has(actorId)) {
         mafiaKillTarget = action.targetId;
+        mafiaKillNote = action.note;
         break;
       }
     }
 
     // Step 4: Serial Killer
     let skKillTarget = null;
+    let skKillNote = null;
     const skPlayer = state.players.find(p => p.role.id === 'serialKiller' && p.alive);
     if (skPlayer && actions[skPlayer.id]?.actionType === 'sk_kill') {
       skKillTarget = actions[skPlayer.id].targetId;
+      skKillNote = actions[skPlayer.id].note;
     }
 
     // Step 5: Vigilante
@@ -234,6 +240,33 @@ const Game = (function () {
     if (vigPlayer && actions[vigPlayer.id]?.actionType === 'vigilante_kill' && !roleblocked.has(vigPlayer.id) && vigPlayer.role.usesLeft > 0) {
       vigilanteKillTarget = actions[vigPlayer.id].targetId;
       vigPlayer.role.usesLeft--;
+    }
+
+    // Step 5.5: Rambo
+    let ramboKillTarget = null;
+    const ramboPlayer = state.players.find(p => p.role.id === 'rambo' && p.alive);
+    if (ramboPlayer && actions[ramboPlayer.id]?.actionType === 'rambo_kill' && !roleblocked.has(ramboPlayer.id) && ramboPlayer.role.usesLeft > 0) {
+      ramboKillTarget = actions[ramboPlayer.id].targetId;
+      ramboPlayer.role.usesLeft--;
+    }
+    
+    // Step 5.6: Arsonist douse/ignite intention
+    let arsonistIgnite = false;
+    const arsonistPlayer = state.players.find(p => p.role.id === 'arsonist' && p.alive && !roleblocked.has(p.id));
+    if (arsonistPlayer && actions[arsonistPlayer.id]?.actionType === 'arsonist_action') {
+      if (actions[arsonistPlayer.id].targetId === arsonistPlayer.id) {
+        arsonistIgnite = true;
+      } else {
+        const target = getPlayer(actions[arsonistPlayer.id].targetId);
+        if (target && target.alive) target.doused = true;
+      }
+    }
+    
+    // Step 5.7: Framer intention
+    const framedPlayers = new Set();
+    const framerPlayer = state.players.find(p => p.role.id === 'framer' && p.alive && !roleblocked.has(p.id));
+    if (framerPlayer && actions[framerPlayer.id]?.actionType === 'frame') {
+      framedPlayers.add(actions[framerPlayer.id].targetId);
     }
 
     // Step 6: Doctor heal
@@ -284,6 +317,7 @@ const Game = (function () {
         } else {
           casualties.push({ playerId: mafiaKillTarget, cause: 'mafia_kill' });
           results.killed = mafiaKillTarget;
+          if (mafiaKillNote) results.deathNotes[mafiaKillTarget] = mafiaKillNote;
         }
       }
     }
@@ -297,6 +331,7 @@ const Game = (function () {
         } else {
           casualties.push({ playerId: skKillTarget, cause: 'sk_kill' });
           results.skKill = skKillTarget;
+          if (skKillNote) results.deathNotes[skKillTarget] = skKillNote;
         }
       }
     }
@@ -320,6 +355,25 @@ const Game = (function () {
       casualties.push({ playerId: vigPlayer.id, cause: 'vigilante_guilt' });
       vigPlayer.vigilanteGuilt = false;
     }
+    
+    // Rambo kill
+    if (ramboKillTarget) {
+      const target = getPlayer(ramboKillTarget);
+      if (target && target.alive) {
+        casualties.push({ playerId: ramboKillTarget, cause: 'rambo_kill' });
+        results.ramboKill = ramboKillTarget;
+      }
+    }
+    
+    // Arsonist ignite
+    if (arsonistIgnite) {
+      for (const p of state.players) {
+        if (p.doused && p.alive && p.id !== arsonistPlayer?.id) {
+           casualties.push({ playerId: p.id, cause: 'arsonist_ignite' });
+           p.doused = false;
+        }
+      }
+    }
 
     // Apply all casualties
     for (const c of casualties) {
@@ -341,6 +395,7 @@ const Game = (function () {
         let result = target.role.team;
         if (target.role.id === 'godfather') result = 'town'; // appears innocent
         if (target.role.id === 'serialKiller') result = 'mafia'; // appears suspicious
+        if (framedPlayers.has(targetId)) result = 'mafia'; // framed
         results.investigated[detPlayer.id] = { targetId, result, targetName: target.name };
       }
     }
@@ -439,7 +494,7 @@ const Game = (function () {
 
   function eliminatePlayer(playerId, cause = 'voted_out') {
     const player = getPlayer(playerId);
-    if (!player) return;
+    if (!player || !player.alive) return;
 
     player.alive = false;
     player.eliminated = true;
@@ -452,9 +507,29 @@ const Game = (function () {
       vigilante_kill: `🏹 ${player.name} was shot by the Vigilante.`,
       vigilante_guilt: `😔 ${player.name} (Vigilante) died of guilt.`,
       sheriff_shot: `⭐ ${player.name} was shot by the Sheriff.`,
+      heartbreak: `💔 ${player.name} died of a broken heart.`,
+      arsonist_ignite: `🔥 ${player.name} was incinerated by the Arsonist.`,
+      rambo_kill: `💥 ${player.name} was blown away by Rambo.`,
+      saint_retribution: `⚡ ${player.name} was struck down by divine retribution.`,
     };
 
     addLog(causeMsgs[cause] || `${player.name} was eliminated.`, true);
+
+    // Trigger Lover death (Heartbreak)
+    if (player.role.id === 'lover') {
+      const otherLovers = state.players.filter(p => p.role.id === 'lover' && p.alive);
+      for (const lover of otherLovers) {
+        eliminatePlayer(lover.id, 'heartbreak');
+      }
+    }
+
+    // Trigger Saint retribution
+    if (player.role.id === 'saint' && cause === 'voted_out') {
+      const voters = Object.entries(state.votes).filter(([voterId, targetId]) => targetId === playerId).map(([voterId]) => voterId);
+      for (const voterId of voters) {
+        eliminatePlayer(voterId, 'saint_retribution');
+      }
+    }
 
     // Jester win condition
     if (player.role.id === 'jester' && cause === 'voted_out') {
