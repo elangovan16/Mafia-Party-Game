@@ -37,23 +37,141 @@
       </div>
       <div class="home-buttons">
         <button class="btn btn-primary glow" id="btn-host" onclick="showScreen('screen-setup')">
-          <span class="btn-icon">👑</span> Host a Game
+          <span class="btn-icon">👑</span> Host Online Game
+        </button>
+        <button class="btn btn-local glow-local" id="btn-local" onclick="showLocalSetup()">
+          <span class="btn-icon">📱</span> Local / Pass &amp; Play
         </button>
         <button class="btn btn-secondary" id="btn-join" onclick="showScreen('screen-join')">
-          <span class="btn-icon">🎭</span> Join Game
+          <span class="btn-icon">🎭</span> Join Online Game
         </button>
         <button class="btn btn-ghost" id="btn-rules" onclick="showScreen('screen-rules')">
-          <span class="btn-icon">📜</span> Rules & Roles
+          <span class="btn-icon">📜</span> Rules &amp; Roles
         </button>
         <a href="admin.html" class="btn btn-ghost" id="btn-admin" style="text-align:center;text-decoration:none;font-size:0.78rem;opacity:0.55;padding:0.5rem 1rem;border-color:rgba(255,255,255,0.1)">
           <span class="btn-icon" style="font-size:0.9rem">🛠️</span> Admin / Dev
         </a>
       </div>
       <div class="home-footer">
-        <span>Play online • Hotspot • Any device</span>
+        <span>Play online • Hotspot • Local pass &amp; play</span>
       </div>
     </div>
     <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- ========== LOCAL GAME SETUP SCREEN ========== -->
+  <div id="screen-local" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+      <h2>📱 Local Game</h2>
+    </div>
+    <div class="local-setup-content">
+      <!-- Step 1: Game Config -->
+      <div id="local-config-step" class="local-step">
+        <div class="local-step-header">
+          <div class="local-step-icon">⚙️</div>
+          <div>
+            <div class="local-step-title">Game Configuration</div>
+            <div class="local-step-sub">Set up roles &amp; settings for your local game</div>
+          </div>
+        </div>
+        <div class="setup-section">
+          <label>Organizer / Narrator Name</label>
+          <input type="text" id="local-organizer-name" class="input-field" placeholder="e.g. Alex (the host)..." maxlength="20" value="Organizer" />
+        </div>
+        <div class="setup-section">
+          <label>Number of Players <span id="local-player-count-display" class="badge">6</span></label>
+          <input type="range" id="local-player-count" min="5" max="16" value="6" class="slider" oninput="updateLocalPlayerCount(this.value)" />
+          <div class="slider-labels"><span>5</span><span>16</span></div>
+        </div>
+        <div class="setup-section">
+          <label>Roles in Game</label>
+          <div class="roles-grid" id="local-roles-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="setup-section">
+          <label>Game Settings</label>
+          <div class="settings-grid" id="local-settings-grid">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </div>
+        <div class="recommended-roles" id="local-recommended-roles"></div>
+        <button class="btn btn-local glow-local full-width" onclick="goToLocalPlayerAdd()">
+          <span class="btn-icon">👥</span> Next: Add Players
+        </button>
+      </div>
+
+      <!-- Step 2: Add Players -->
+      <div id="local-players-step" class="local-step" style="display:none">
+        <div class="local-step-header">
+          <div class="local-step-icon">👥</div>
+          <div>
+            <div class="local-step-title">Add Players</div>
+            <div class="local-step-sub">Add each player — they'll see their role privately</div>
+          </div>
+        </div>
+
+        <div class="local-player-add-form">
+          <input type="text" id="local-add-name" class="input-field" placeholder="Player name..." maxlength="20"
+            onkeydown="if(event.key==='Enter') addLocalPlayer()" />
+          <button class="btn btn-local" onclick="addLocalPlayer()">
+            <span class="btn-icon">+</span> Add
+          </button>
+        </div>
+
+        <div class="local-players-needed-bar">
+          <span id="local-players-added-count" class="badge">0</span>
+          <span class="local-needed-text"> / <span id="local-target-count">6</span> players added</span>
+          <div class="local-progress-bar">
+            <div class="local-progress-fill" id="local-progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="local-players-list" id="local-players-list">
+          <!-- Players shown here -->
+        </div>
+
+        <div class="local-start-wrap">
+          <button class="btn btn-local glow-local full-width" id="btn-start-local" onclick="startLocalGame()" disabled>
+            <span class="btn-icon">⚡</span> Start Game
+          </button>
+          <p class="start-hint" id="local-start-hint">Add at least 5 players to start</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PRIVATE ROLE COVER SCREEN (Organizer Control Panel) ========== -->
+  <div id="screen-role-cover" class="screen">
+    <div class="role-cover-content">
+      <!-- State A: Before showing role — organizer sees this -->
+      <div id="cover-state-a">
+        <div class="org-badge">📋 ORGANIZER</div>
+        <div class="role-cover-moon">🌙</div>
+        <div class="org-instruction-card">
+          <div class="org-instruction-icon">📢</div>
+          <div class="org-instruction-text" id="org-call-instruction">Call the player's name and have them open their eyes.</div>
+        </div>
+        <p class="role-cover-sub" id="role-cover-player-name">Next player</p>
+        <button class="btn btn-local glow-local" id="btn-ready-reveal" onclick="readyForReveal()">
+          <span class="btn-icon">👁️</span> Show Role
+        </button>
+        <div class="role-cover-shield">🛡️ Others keep eyes closed</div>
+      </div>
+      <!-- State B: After showing role — player has seen it -->
+      <div id="cover-state-b" style="display:none">
+        <div class="org-badge">📋 ORGANIZER</div>
+        <div class="role-cover-moon" style="font-size:3.5rem">✅</div>
+        <div class="org-instruction-card">
+          <div class="org-instruction-icon">📢</div>
+          <div class="org-instruction-text" id="org-done-instruction">Player has seen their role. Ask them to close their eyes.</div>
+        </div>
+        <button class="btn btn-local glow-local" id="btn-next-player" onclick="nextRoleReveal()">
+          <span class="btn-icon">➡️</span> Next Player
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ========== GAME SETUP SCREEN ========== -->
@@ -80,34 +198,8 @@
       </div>
       <div class="setup-section">
         <label>Game Settings</label>
-        <div class="settings-grid">
-          <div class="setting-item">
-            <span>Day Discussion Time</span>
-            <select id="day-time" class="select-field">
-              <option value="60">1 min</option>
-              <option value="120" selected>2 min</option>
-              <option value="180">3 min</option>
-              <option value="300">5 min</option>
-              <option value="0">No limit</option>
-            </select>
-          </div>
-          <div class="setting-item">
-            <span>Night Action Time</span>
-            <select id="night-time" class="select-field">
-              <option value="20">20 sec</option>
-              <option value="30" selected>30 sec</option>
-              <option value="45">45 sec</option>
-              <option value="60">1 min</option>
-            </select>
-          </div>
-          <div class="setting-item toggle-item">
-            <span>Sheriff's Badge</span>
-            <label class="toggle"><input type="checkbox" id="sheriff-badge" checked /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="setting-item toggle-item">
-            <span>Last Will</span>
-            <label class="toggle"><input type="checkbox" id="last-will" /><span class="toggle-slider"></span></label>
-          </div>
+        <div class="settings-grid" id="online-settings-grid">
+          <!-- Populated dynamically by JS -->
         </div>
       </div>
       <div class="recommended-roles" id="recommended-roles">
@@ -233,6 +325,18 @@
         <div class="night-actions" id="night-actions">
           <!-- Dynamic content -->
         </div>
+      </div>
+
+      <!-- Narrator Step overlay (local/organizer mode only) -->
+      <div class="narrator-step" id="narrator-step" style="display:none">
+        <div class="org-badge">📋 ORGANIZER</div>
+        <div class="org-instruction-card org-instruction-card--night">
+          <div class="org-instruction-icon" id="narrator-step-icon">📢</div>
+          <div class="org-instruction-text" id="narrator-step-text">Say: "Role, open your eyes."</div>
+        </div>
+        <button class="btn btn-local glow-local" id="btn-show-action" onclick="onNarratorReady()">
+          <span class="btn-icon">👁️</span> <span id="btn-show-action-label">Show Action Panel</span>
+        </button>
       </div>
 
       <!-- Action panel (shown for relevant role) -->

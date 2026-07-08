@@ -35,16 +35,18 @@ No server, no build, no install required.
   1. `screen-loading` — splash/loading animation
   2. `screen-home` — main menu (Host, Join, Rules)
   3. `screen-setup` — host configures players, roles, and settings
-  4. `screen-join` — join via room code
-  5. `screen-lobby` — waiting room with room code + QR code
-  6. `screen-role-reveal` — flip card per player to see role privately
-  7. `screen-night` — night phase: action queue + action panel
-  8. `screen-dawn` — transition: news of what happened overnight
-  9. `screen-day` — discussion timer + nomination grid + vote tally
-  10. `screen-vote` — full voting panel with candidates
-  11. `screen-elimination` — shows eliminated player's role
-  12. `screen-win` — winner announcement + confetti + all-roles reveal
-  13. `screen-rules` — tabbed: How to Play | Roles | Winning | Tips
+  4. `screen-local` — local game setup and player management
+  5. `screen-role-cover` — private role reveal cover screen (Organizer panel)
+  6. `screen-join` — join via room code
+  7. `screen-lobby` — waiting room with room code + QR code
+  8. `screen-role-reveal` — flip card per player to see role privately
+  9. `screen-night` — night phase: action queue + action panel
+  10. `screen-dawn` — transition: news of what happened overnight
+  11. `screen-day` — discussion timer + nomination grid + vote tally
+  12. `screen-vote` — full voting panel with candidates
+  13. `screen-elimination` — shows eliminated player's role
+  14. `screen-win` — winner announcement + confetti + all-roles reveal
+  15. `screen-rules` — tabbed: How to Play | Roles | Winning | Tips
 
 - Script load order matters:
   ```html
@@ -439,22 +441,23 @@ roleBack.style.background  = `linear-gradient(135deg, #1a0f2e, ${role.color}22)`
 ```
 
 ### Offline vs Online mode
-- `isOnlineMode = false` → all game state lives on one device (pass-and-play)
-- `isOnlineMode = true` → host is source of truth, clients send actions via PeerJS
-- Most UI functions check `Network.getIsHost() || !isOnlineMode` before processing locally
+- `isOnlineMode = false` → all game state lives on one device.
+- `isOnlineMode = true` → host is source of truth, clients send actions via PeerJS.
+- `isLocalMode = true` → Local Pass & Play mode.
 
-### Night queue (offline mode)
-In offline (pass-and-play) mode, ALL role actions are handled on one device.
-The night queue shows each role's panel one by one, player passes device,
-sees their role's action UI, submits, then passes back.
+### Local Pass & Play Mode (Organizer/Narrator Flow)
+In Local Pass & Play mode:
+- One player acts as the **Organizer / Narrator** (name stored in `organizerName`).
+- **Role Reveal**: Handled via `#screen-role-cover` (State A and State B). The Organizer calls the player, hits "Show Role", let's them view their card privately, asks them to close their eyes, and then hits "Next Player" (confirming the player closed their eyes).
+- **Night Phase**: The Organizer screen shows a narrator instruction block (`#narrator-step`) before each role's turn. The Organizer announces the role turn aloud (e.g. *"Doctor, open your eyes"*), clicks "Show Action" to log choices silently, and then announces *"Doctor, close your eyes"* before hitting "Next".
+- **Timers**: Setting a timer value to `0` represents "No limit" (supported on both day and night phases). When the night timer is set to `0`, the visual action timer element is hidden entirely.
 
 ---
 
 ## Common Modifications
 
-### Change default timer durations
-Edit default `<option selected>` in `index.html` setup screen selects,
-or change fallback values in `ui.js`: `gameSettings.dayTime || 120` and `gameSettings.nightTime || 30`.
+### Change default timer durations and options
+Edit the `SETTINGS_CONFIG` constant in `roles.js`. The HTML elements are generated dynamically at startup from this config.
 
 ### Change minimum players to start
 In `ui.js → updateLobbyPlayers()`: `const canStart = count >= 5;`

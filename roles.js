@@ -298,18 +298,18 @@ const ROLE_ORDER = [
 
 // Recommended role presets by player count
 const ROLE_PRESETS = {
-  5:  { villager: 2, mafioso: 1, godfather: 1, detective: 1 },
-  6:  { villager: 2, mafioso: 1, godfather: 1, detective: 1, doctor: 1 },
-  7:  { villager: 2, mafioso: 1, godfather: 1, detective: 1, doctor: 1, jester: 1 },
-  8:  { villager: 2, mafioso: 2, godfather: 1, detective: 1, doctor: 1, sheriff: 1 },
-  9:  { villager: 2, mafioso: 2, godfather: 1, detective: 1, doctor: 1, bodyguard: 1, jester: 1 },
-  10: { villager: 2, mafioso: 2, godfather: 1, detective: 1, doctor: 1, escort: 1, mayor: 1, jester: 1 },
-  11: { villager: 2, mafioso: 2, godfather: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, mayor: 1, jester: 1 },
-  12: { villager: 2, mafioso: 2, godfather: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, bodyguard: 1, mayor: 1, jester: 1 },
-  13: { villager: 2, mafioso: 2, godfather: 1, consort: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, escort: 1, sheriff: 1, jester: 1 },
-  14: { villager: 3, mafioso: 2, godfather: 1, consort: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, escort: 1, sheriff: 1, jester: 1 },
-  15: { villager: 3, mafioso: 3, godfather: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, bodyguard: 1, escort: 1, mayor: 1, serialKiller: 1, jester: 1 },
-  16: { villager: 3, mafioso: 3, godfather: 1, consigliere: 1, detective: 1, spy: 1, doctor: 1, vigilante: 1, bodyguard: 1, escort: 1, mayor: 1, serialKiller: 1, jester: 1 },
+  5:  { villager: 2, mafioso: 2, detective: 1 },
+  6:  { villager: 2, mafioso: 2, detective: 1, doctor: 1 },
+  7:  { villager: 2, mafioso: 2, detective: 1, doctor: 1, jester: 1 },
+  8:  { villager: 2, mafioso: 3, detective: 1, doctor: 1, sheriff: 1 },
+  9:  { villager: 2, mafioso: 3, detective: 1, doctor: 1, bodyguard: 1, jester: 1 },
+  10: { villager: 2, mafioso: 3, detective: 1, doctor: 1, escort: 1, mayor: 1, jester: 1 },
+  11: { villager: 2, mafioso: 3, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, mayor: 1, jester: 1 },
+  12: { villager: 2, mafioso: 3, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, bodyguard: 1, mayor: 1, jester: 1 },
+  13: { villager: 2, mafioso: 3, consort: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, escort: 1, sheriff: 1, jester: 1 },
+  14: { villager: 3, mafioso: 3, consort: 1, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, escort: 1, sheriff: 1, jester: 1 },
+  15: { villager: 3, mafioso: 4, consigliere: 1, detective: 1, doctor: 1, vigilante: 1, bodyguard: 1, escort: 1, mayor: 1, serialKiller: 1, jester: 1 },
+  16: { villager: 3, mafioso: 4, consigliere: 1, detective: 1, spy: 1, doctor: 1, vigilante: 1, bodyguard: 1, escort: 1, mayor: 1, serialKiller: 1, jester: 1 },
 };
 
 // Night action order (lower = acts earlier)
@@ -363,3 +363,50 @@ function shuffleDeck(deck) {
 function getPresetForCount(count) {
   return ROLE_PRESETS[count] || ROLE_PRESETS[5];
 }
+
+// Game Settings Configuration
+const SETTINGS_CONFIG = {
+  dayTime: {
+    id: 'day-time',
+    label: 'Day Discussion Time',
+    desc: 'Voting starts automatically when the timer ends (unless \'No limit\' is selected).',
+    type: 'select',
+    default: '120',
+    options: [
+      { value: '60', label: '1 min' },
+      { value: '120', label: '2 min' },
+      { value: '180', label: '3 min' },
+      { value: '300', label: '5 min' },
+      { value: '0', label: 'No limit' }
+    ]
+  },
+  nightTime: {
+    id: 'night-time',
+    label: 'Night Action Time',
+    desc: 'Actions are skipped automatically when the timer ends (unless \'No limit\' is selected).',
+    type: 'select',
+    default: '30',
+    options: [
+      { value: '20', label: '20 sec' },
+      { value: '30', label: '30 sec' },
+      { value: '45', label: '45 sec' },
+      { value: '60', label: '1 min' },
+      { value: '0', label: 'No limit' }
+    ]
+  },
+  sheriffBadge: {
+    id: 'sheriff-badge',
+    label: 'Sheriff\'s Badge',
+    desc: 'If enabled, Sheriff dies of guilt if they execute an innocent player.',
+    type: 'toggle',
+    default: true
+  },
+  lastWill: {
+    id: 'last-will',
+    label: 'Last Will',
+    desc: 'Allows players to write a final note revealed upon their elimination.',
+    type: 'toggle',
+    default: false
+  }
+};
+

@@ -1,4 +1,4 @@
-﻿/* admin.js - MAFIA Game Admin / Testing Panel */
+/* admin.js - MAFIA Game Admin / Testing Panel */
 const Admin = (() => {
   let pendingPlayers = [];
   let gameActive = false;
