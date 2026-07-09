@@ -436,7 +436,7 @@ const Game = (function () {
   function castVote(voterId, targetId) {
     // Remove previous vote
     const prevVote = state.votes[voterId];
-    if (prevVote) {
+    if (prevVote && prevVote !== 'abstain') {
       const prevTarget = getPlayer(prevVote);
       if (prevTarget) prevTarget.voteCount--;
     }
@@ -458,11 +458,11 @@ const Game = (function () {
 
   function abstainVote(voterId) {
     const prev = state.votes[voterId];
-    if (prev) {
+    if (prev && prev !== 'abstain') {
       const prevTarget = getPlayer(prev);
       if (prevTarget) prevTarget.voteCount--;
     }
-    delete state.votes[voterId];
+    state.votes[voterId] = 'abstain';
   }
 
   function resolveVote() {

@@ -1,4 +1,4 @@
-﻿/* ─── Screen System ─── */
+/* ─── Screen System ─── */
 .screen {
   position: fixed;
   inset: 0;
@@ -863,6 +863,40 @@
 
 .candidate-name { font-weight: 600; }
 .candidate-votes { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; }
+
+.candidate-counter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.counter-btn {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.counter-btn:hover {
+  background: var(--secondary);
+  border-color: var(--secondary);
+}
+
+.counter-value {
+  width: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
 
 .vote-actions { display: flex; flex-direction: column; gap: 0.625rem; }
 

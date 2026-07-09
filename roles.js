@@ -495,6 +495,17 @@ const SETTINGS_CONFIG = {
     desc: 'If disabled, the roles of eliminated players will remain a secret.',
     type: 'toggle',
     default: true
+  },
+  startPhase: {
+    id: 'start-phase',
+    label: 'First Phase',
+    desc: 'Choose whether the game begins during the Day or Night.',
+    type: 'select',
+    default: 'night',
+    options: [
+      { value: 'day', label: 'Day 1' },
+      { value: 'night', label: 'Night 1' }
+    ]
   }
 };
 

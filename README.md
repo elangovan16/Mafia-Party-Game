@@ -41,14 +41,14 @@ The Town wins by eliminating all Mafia. The Mafia wins by gaining majority contr
 
 ## 🚀 How to Play
 
-### Option 1 — One Device (Pass-and-Play)
-> Best for: a group sitting together with one phone/laptop
+### Option 1 — One Device (Local Pass & Play)
+> Best for: a group sitting together in a circle, with one person acting as the Organizer
 
 1. Open `index.html` in any browser
-2. Click **Host a Game**
-3. Enter names for all players when prompted
-4. Pass the device around — each player **taps to flip** their secret role card
-5. Play using the on-screen prompts for Night and Day phases
+2. Click **Local Pass & Play**
+3. The Organizer adds players and configures the game settings
+4. The Organizer calls each player to view their secret role one by one
+5. The Organizer acts as the narrator, logging actions on the device while the players keep their eyes closed during the Night, and tallying real-world votes during the Day phase.
 
 ---
 
@@ -133,8 +133,9 @@ Configurable before each game:
 | Setting | Options |
 |---------|---------|
 | Number of Players | 5 – 16 (Online mode) / Dynamic by added players (Pass & Play mode) |
+| Start Phase | Night 1 / Day 1 |
 | Day Discussion Time | 1 min / 2 min / 3 min / 5 min / No limit |
-| Night Action Time | 20s / 30s / 45s / 1 min |
+| Night Action Time | 20s / 30s / 45s / 1 min / No limit |
 | Sheriff's Badge | Enable/disable the Sheriff role's shoot ability |
 | Last Will | Players can leave a final message shown upon elimination |
 
@@ -177,25 +178,25 @@ Mafia Party Game/
 ┌─────────────────────────────────────────────────────────────┐
 │                         Browser                             │
 │                                                             │
-│  ┌─────────┐   reads    ┌──────────────────────────────┐   │
-│  │ roles.js│──────────►│           game.js             │   │
-│  │ (data)  │           │   (pure logic, no DOM)        │   │
-│  └─────────┘           │   - state machine             │   │
-│                         │   - night resolution          │   │
-│  ┌──────────┐ calls    │   - vote resolution           │   │
-│  │network.js│◄────────►│   - win detection             │   │
-│  │ (PeerJS) │           └──────────────┬───────────────┘   │
+│  ┌─────────┐   reads   ┌───────────────────────────────┐    │
+│  │ roles.js│──────────►│           game.js             │    │
+│  │ (data)  │           │   (pure logic, no DOM)        │    │
+│  └─────────┘           │   - state machine             │    │
+│                        │   - night resolution          │    │
+│  ┌──────────┐ calls    │   - vote resolution           │    │
+│  │network.js│◄────────►│   - win detection             │    │
+│  │ (PeerJS) │          └───────────────┬───────────────┘    │
 │  └──────────┘                          │ updates            │
 │                                         ▼                   │
-│                         ┌──────────────────────────────┐   │
-│  ┌──────────┐ modifies │         js/ui/*.js          │   │
-│  │index.html│◄─────────│   (screen manager + events)  │   │
-│  │ (screens)│          │   - showScreen()              │   │
-│  └──────────┘          │   - night queue UI            │   │
-│                         │   - timers + toasts + modal   │   │
-│  ┌──────────┐ styles   └──────────────────────────────┘   │
-│  │styles.css│──────────► all screens                       │
-│  └──────────┘                                              │
+│                         ┌──────────────────────────────┐    │
+│  ┌──────────┐ modifies  │         js/ui/*.js           │    │
+│  │index.html│◄─────────►│   (screen manager + events)  │    │
+│  │ (screens)│           │   - showScreen()             │    │
+│  └──────────┘           │   - night queue UI           │    │
+│                         │   - timers + toasts + modal  │    │
+│  ┌──────────┐ styles    └──────────────────────────────┘    │
+│  │styles.css│──────────► all screens                        │
+│  └──────────┘                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -205,19 +206,19 @@ Mafia Party Game/
 Host Device                            Client Devices
 ──────────                             ──────────────
 createRoom()                           joinRoom(code)
-  │                                         │
-  │ PeerJS signaling server (cloud)         │
+  │                                          │
+  │ PeerJS signaling server (cloud)          │
   │◄────────────────────────────────────────►│
-  │                                         │
-  │ WebRTC direct P2P connection            │
+  │                                          │
+  │ WebRTC direct P2P connection             │
   │◄────────────────────────────────────────►│
-  │                                         │
-  │  ← player_join (name)                   │
-  │  → lobby_update (player list)           │
-  │  → game_start + your_role (private)     │
-  │                                         │
-  │  ← night_action_submitted               │
-  │  → elimination, win, vote_update        │
+  │                                          │
+  │  ← player_join (name)                    │
+  │  → lobby_update (player list)            │
+  │  → game_start + your_role (private)      │
+  │                                          │
+  │  ← night_action_submitted                │
+  │  → elimination, win, vote_update         │
 ```
 
 - The **host is the game master** — holds all state, resolves all night actions

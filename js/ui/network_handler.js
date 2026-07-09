@@ -1,4 +1,4 @@
-﻿/* ── Network Message Handler ────────────────────────────────── */
+/* ── Network Message Handler ────────────────────────────────── */
 function handleNetworkMessage(peerId, data) {
   if (!data || !data.type) return;
 
@@ -31,8 +31,13 @@ function handleHostMessage(peerId, data) {
       break;
 
     case 'vote_cast':
-      Game.castVote(data.voterId, data.targetId);
+      if (data.targetId === null) {
+        Game.abstainVote(data.voterId);
+      } else {
+        Game.castVote(data.voterId, data.targetId);
+      }
       broadcastVoteUpdate();
+      if (typeof checkEndVoting === 'function') checkEndVoting();
       break;
 
     case 'nomination':
@@ -78,6 +83,10 @@ function handleClientMessage(peerId, data) {
 
     case 'elimination':
       receiveElimination(data);
+      break;
+
+    case 'no_verdict':
+      if (typeof showNoVerdictScreen === 'function') showNoVerdictScreen();
       break;
 
     case 'win':
@@ -173,7 +182,7 @@ function showNightActionPanelForClient(action, fakePlayer, alivePlayers) {
     targetList.appendChild(btn);
   });
 
-  startNightTimer(gameSettings.nightTime || 30);
+  startNightTimer(gameSettings.nightTime ?? 30);
 
   // Note Input for killers
   const noteWrap = document.getElementById('night-note-wrap');
@@ -218,7 +227,7 @@ function receiveDayStart(data) {
   const dayNum = document.getElementById('day-num');
   if (dayNum && data.dayCount) dayNum.textContent = data.dayCount;
 
-  startDayTimer(gameSettings.dayTime || 120);
+  startDayTimer(gameSettings.dayTime ?? 120);
 }
 
 function receiveElimination(data) {

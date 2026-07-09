@@ -1,4 +1,4 @@
-﻿/* ── Night Phase ─────────────────────────────────────────────── */
+/* ── Night Phase ─────────────────────────────────────────────── */
 let nightTimerInterval = null;
 let selectedNightTarget = null;
 let nightActionQueue = [];
@@ -166,7 +166,7 @@ function showNightActionPanel(action, player) {
   });
 
   // Timer
-  startNightTimer(gameSettings.nightTime || 30);
+  startNightTimer(gameSettings.nightTime ?? 30);
   
   // Note Input for killers
   const noteWrap = document.getElementById('night-note-wrap');
@@ -480,10 +480,19 @@ function showDayPhase() {
   document.getElementById('day-num').textContent = Game.getDayCount();
 
   buildDayPlayersGrid();
-  startDayTimer(gameSettings.dayTime || 120);
+  startDayTimer(gameSettings.dayTime ?? 120);
   updateVoteTally();
 
   Game.addLog(`☀️ Day ${Game.getDayCount()} begins.`, true);
+
+  if (isOnlineMode && Network.getIsHost()) {
+    const aliveList = Game.getAlivePlayers().map(p => ({ id: p.id, name: p.name, peerId: p.peerId, alive: true }));
+    Network.broadcast({
+      type:        'day_start',
+      dayCount:    Game.getDayCount(),
+      alivePlayers: aliveList,
+    });
+  }
 }
 
 // Called from dawn screen button
@@ -493,15 +502,6 @@ function showScreen_day() { showDayPhase(); }
 document.addEventListener('DOMContentLoaded', () => {
   const dawnBtn = document.querySelector('#screen-dawn .btn');
   if (dawnBtn) dawnBtn.onclick = () => {
-    // In online mode (host), tell clients to advance to day before doing so locally
-    if (isOnlineMode && Network.getIsHost()) {
-      const aliveList = Game.getAlivePlayers().map(p => ({ id: p.id, name: p.name, peerId: p.peerId, alive: true }));
-      Network.broadcast({
-        type:        'day_start',
-        dayCount:    Game.getDayCount() + 1,
-        alivePlayers: aliveList,
-      });
-    }
     showDayPhase();
   };
 });
@@ -630,25 +630,77 @@ function showVoteScreen() {
   const alive = Game.getAlivePlayers();
   const emojis = ['🧑', '👩', '🧔', '👴', '👵', '🧕', '🧑‍🦱'];
 
-  alive.forEach((p, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'candidate-btn';
-    btn.dataset.candidateId = p.id;
-    btn.innerHTML = `
-      <div class="p-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;flex-shrink:0;">${emojis[i % emojis.length]}</div>
-      <div>
-        <div class="candidate-name">${p.name}</div>
-        <div class="candidate-votes">${p.voteCount || 0} nomination(s)</div>
-      </div>
-    `;
-    btn.onclick = () => selectVoteCandidate(p.id, btn);
-    candidates.appendChild(btn);
-  });
+  if (!isOnlineMode) {
+    // Local mode: Render counter buttons for the organizer to input real votes
+    alive.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'candidate-btn';
+      // Initialize a temporary local counter property if not exists
+      p._localVotes = p._localVotes || 0;
+      
+      row.innerHTML = `
+        <div class="p-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;flex-shrink:0;">${emojis[i % emojis.length]}</div>
+        <div>
+          <div class="candidate-name">${p.name}</div>
+          <div class="candidate-votes">${p.voteCount || 0} nomination(s)</div>
+        </div>
+        <div class="candidate-counter-wrapper">
+          <div class="counter-btn" onclick="updateLocalVote('${p.id}', -1)">-</div>
+          <div class="counter-value" id="local-vote-val-${p.id}">${p._localVotes}</div>
+          <div class="counter-btn" onclick="updateLocalVote('${p.id}', 1)">+</div>
+        </div>
+      `;
+      candidates.appendChild(row);
+    });
+    
+    document.getElementById('btn-cast-vote').textContent = "Resolve Votes";
+    document.getElementById('btn-cast-vote').disabled = false;
+  } else {
+    // Online mode: Render standard selection buttons
+    alive.forEach((p, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'candidate-btn';
+      btn.dataset.candidateId = p.id;
+      btn.innerHTML = `
+        <div class="p-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--secondary),var(--primary));display:flex;align-items:center;justify-content:center;flex-shrink:0;">${emojis[i % emojis.length]}</div>
+        <div>
+          <div class="candidate-name">${p.name}</div>
+        </div>
+      `;
+      btn.onclick = () => selectVoteCandidate(p.id, btn);
+      candidates.appendChild(btn);
+    });
 
-  document.getElementById('btn-cast-vote').disabled = true;
+    document.getElementById('btn-cast-vote').textContent = "Cast Vote";
+    document.getElementById('btn-cast-vote').disabled = true;
+    
+    // If Host, add a Force End button instead of Abstain
+    if (Network.getIsHost()) {
+      const actions = document.getElementById('vote-actions');
+      let forceBtn = document.getElementById('btn-force-end-vote');
+      if (!forceBtn) {
+        forceBtn = document.createElement('button');
+        forceBtn.id = 'btn-force-end-vote';
+        forceBtn.className = 'btn btn-warning';
+        forceBtn.textContent = 'Force End Voting (Host)';
+        forceBtn.onclick = () => endVoting();
+        actions.appendChild(forceBtn);
+      }
+      forceBtn.style.display = 'block';
+    }
+  }
+}
+
+function updateLocalVote(playerId, delta) {
+  const p = Game.getPlayer(playerId);
+  if (p) {
+    p._localVotes = Math.max(0, (p._localVotes || 0) + delta);
+    document.getElementById(`local-vote-val-${p.id}`).textContent = p._localVotes;
+  }
 }
 
 function selectVoteCandidate(targetId, btn) {
+  if (!isOnlineMode) return;
   document.querySelectorAll('.candidate-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedVoteTarget = targetId;
@@ -656,35 +708,110 @@ function selectVoteCandidate(targetId, btn) {
 }
 
 function castVote() {
-  if (!selectedVoteTarget) return;
-
-  if (Network.getIsHost() || !isOnlineMode) {
-    Game.castVote('local', selectedVoteTarget);
+  if (!isOnlineMode) {
+    // Local mode: apply all _localVotes directly to Game voteCount, then resolve
+    const alive = Game.getAlivePlayers();
+    alive.forEach(p => p.voteCount = 0);
+    alive.forEach(p => {
+      if (p._localVotes > 0) p.voteCount = p._localVotes;
+      p._localVotes = 0; // reset for next time
+    });
+    showVoteResults();
   } else {
-    Network.sendToHost({ type: 'vote_cast', voterId: myPlayerData.id, targetId: selectedVoteTarget });
+    // Online mode: client sends vote and waits
+    if (!selectedVoteTarget) return;
+    
+    if (Network.getIsHost()) {
+      Game.castVote(myPlayerData.id, selectedVoteTarget);
+      checkEndVoting();
+    } else {
+      Network.sendToHost({ type: 'vote_cast', voterId: myPlayerData.id, targetId: selectedVoteTarget });
+    }
+    
+    // Show waiting state
+    document.getElementById('vote-candidates').innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">Waiting for others to vote...</div>';
+    document.getElementById('btn-cast-vote').disabled = true;
+    const actions = document.getElementById('vote-actions');
+    const abstainBtn = actions.querySelector('.btn-ghost');
+    if (abstainBtn) abstainBtn.style.display = 'none';
   }
-
-  // In singleplayer/pass-device: all players vote, then resolve
-  showVoteResults();
 }
 
 function abstainVote() {
-  showVoteResults();
+  if (!isOnlineMode) {
+    // Local mode: skipping vote resolution (no verdict)
+    showModal({
+      header: '⚖️ No Verdict',
+      body: 'The vote was skipped. No one is eliminated today.',
+      buttons: [{ text: 'Continue to Night', class: 'btn-primary', action: () => startNightPhase() }]
+    });
+  } else {
+    // Online mode: client abstains
+    if (Network.getIsHost()) {
+      Game.abstainVote(myPlayerData.id);
+      checkEndVoting();
+    } else {
+      Network.sendToHost({ type: 'vote_cast', voterId: myPlayerData.id, targetId: null }); // null = abstain
+    }
+    
+    document.getElementById('vote-candidates').innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">Waiting for others to vote...</div>';
+    const actions = document.getElementById('vote-actions');
+    const abstainBtn = actions.querySelector('.btn-ghost');
+    if (abstainBtn) abstainBtn.style.display = 'none';
+  }
+}
+
+function checkEndVoting() {
+  if (!isOnlineMode || !Network.getIsHost()) return;
+  // Auto-end if all alive players have cast a vote (or abstained, but abstain currently just deletes their vote, we'll assume the host tracks it differently or we just rely on Force End for abstains if they don't register).
+  // Actually, easiest way is to let Host manually "Force End" if people abstain, or we can check if Object.keys(state.votes).length == alive.length.
+  const state = Game.getState();
+  const aliveCount = Game.getAlivePlayers().length;
+  if (Object.keys(state.votes).length >= aliveCount) {
+    endVoting();
+  }
+}
+
+function endVoting() {
+  if (!Network.getIsHost()) return;
+  
+  // Hide Force End button
+  const forceBtn = document.getElementById('btn-force-end-vote');
+  if (forceBtn) forceBtn.style.display = 'none';
+
+  const eliminated = Game.resolveVote();
+  
+  if (!eliminated) {
+    Network.broadcast({ type: 'no_verdict' });
+    showNoVerdictScreen();
+  } else {
+    Network.broadcast({ 
+      type: 'elimination', 
+      playerId: eliminated.id, 
+      playerName: eliminated.name,
+      cause: 'voted_out',
+      role: eliminated.role
+    });
+    showEliminationScreen(eliminated, 'voted_out');
+  }
+}
+
+function showNoVerdictScreen() {
+  showModal({
+    header: '⚖️ No Verdict',
+    body: 'The vote ended in a tie or no majority. No one is eliminated today.',
+    buttons: [{ text: 'Continue to Night', class: 'btn-primary', action: () => startNightPhase() }]
+  });
 }
 
 function showVoteResults() {
+  // Only called by Local mode now
   const eliminated = Game.resolveVote();
-
   if (!eliminated) {
-    showModal({
-      header: '⚖️ No Verdict',
-      body: 'The vote ended in a tie or no majority. No one is eliminated today.',
-      buttons: [{ text: 'Continue to Night', class: 'btn-primary', action: () => startNightPhase() }]
-    });
-    return;
+    showNoVerdictScreen();
+  } else {
+    showEliminationScreen(eliminated, 'voted_out');
   }
-
-  showEliminationScreen(eliminated, 'voted_out');
 }
 
 /* ── Elimination Screen ─────────────────────────────────────── */

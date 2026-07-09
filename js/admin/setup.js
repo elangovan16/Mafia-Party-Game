@@ -117,8 +117,8 @@ Admin.renderPlayerQueue = function() {
 Admin.launchGame = function() {
   if (Admin.state.pendingPlayers.length < 5) { Admin.toast('Need at least 5 players!', 'error'); return; }
   const settings = {
-    dayTime: parseInt(document.getElementById('cfg-daytime').value) || 30,
-    nightTime: parseInt(document.getElementById('cfg-nighttime').value) || 15,
+    dayTime: parseInt(document.getElementById('cfg-daytime').value) ?? 30,
+    nightTime: parseInt(document.getElementById('cfg-nighttime').value) ?? 15,
     sheriffBadge: document.getElementById('cfg-sheriff').checked,
     lastWill: document.getElementById('cfg-lastwill').checked,
     playerCount: Admin.state.pendingPlayers.length,

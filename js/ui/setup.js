@@ -437,6 +437,7 @@ function startLocalGame() {
     sheriffBadge: document.getElementById('local-sheriff-badge').checked,
     lastWill:     document.getElementById('local-last-will').checked,
     revealRoles:  document.getElementById('local-reveal-roles').checked,
+    startPhase:   document.getElementById('local-start-phase')?.value || 'night',
     playerCount:  localModePlayerCount,
   };
   gameRoleConfig = { ...localRoleCounts };
@@ -525,13 +526,21 @@ function showAllRolesRevealedScreen() {
   if (stateB) {
     stateB.style.display = 'block';
     const moon = stateB.querySelector('.role-cover-moon');
-    if (moon) moon.textContent = '🌙';
-    const instr = document.getElementById('org-done-instruction');
-    if (instr) instr.textContent = 'All players have seen their roles! Keep everyone\'s eyes closed — Night 1 is about to begin.';
-    const nextBtn = document.getElementById('btn-next-player');
-    if (nextBtn) {
-      nextBtn.innerHTML = '<span class="btn-icon">🌙</span> Begin Night 1';
-      nextBtn.onclick = () => startNightPhase();
+    const startPhase = gameSettings.startPhase || 'night';
+    if (startPhase === 'day') {
+      if (moon) moon.textContent = '☀️';
+      if (instr) instr.textContent = 'All players have seen their roles! Day 1 is about to begin.';
+      if (nextBtn) {
+        nextBtn.innerHTML = '<span class="btn-icon">☀️</span> Begin Day 1';
+        nextBtn.onclick = () => showDayPhase();
+      }
+    } else {
+      if (moon) moon.textContent = '🌙';
+      if (instr) instr.textContent = 'All players have seen their roles! Keep everyone\'s eyes closed — Night 1 is about to begin.';
+      if (nextBtn) {
+        nextBtn.innerHTML = '<span class="btn-icon">🌙</span> Begin Night 1';
+        nextBtn.onclick = () => startNightPhase();
+      }
     }
   }
   showScreen('screen-role-cover');
@@ -565,6 +574,7 @@ function createGame() {
     sheriffBadge: document.getElementById('sheriff-badge').checked,
     lastWill:    document.getElementById('last-will').checked,
     revealRoles: document.getElementById('reveal-roles').checked,
+    startPhase:  document.getElementById('start-phase')?.value || 'night',
     playerCount: count,
   };
 

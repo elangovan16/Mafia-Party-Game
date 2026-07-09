@@ -267,8 +267,9 @@ function beginRoleReveal(players) {
 function showCurrentReveal() {
   const player = revealPlayers[revealIndex];
   if (!player) {
-    // All revealed – start first night
-    startNightPhase();
+    // All revealed – start first phase
+    const startPhase = gameSettings.startPhase || 'night';
+    if (startPhase === 'day') showDayPhase(); else startNightPhase();
     return;
   }
 
@@ -359,14 +360,16 @@ function showCurrentReveal() {
           footer.style.display = 'flex';
           const nextBtn = footer.querySelector('button');
           if (nextBtn) {
-            nextBtn.textContent = isAbsoluteLast ? '🌙 Start Night Phase' : '➡️ Next Player';
+            const startPhase = gameSettings.startPhase || 'night';
+            nextBtn.textContent = isAbsoluteLast ? (startPhase === 'day' ? '☀️ Start Day Phase' : '🌙 Start Night Phase') : '➡️ Next Player';
           }
         } else {
           footer.style.display = isLast ? 'none' : 'flex';
           if (isLast) {
             if (!isOnlineMode || Network.getIsHost()) {
-              // Offline or host: auto-advance to night after short delay
-              setTimeout(startNightPhase, 2000);
+              // Offline or host: auto-advance to day/night after short delay
+              const startPhase = gameSettings.startPhase || 'night';
+              setTimeout(startPhase === 'day' ? showDayPhase : startNightPhase, 2000);
             } else {
               // Online client: wait quietly — host will broadcast night_start
               const front = document.querySelector('.role-card-front p');
@@ -409,7 +412,8 @@ function nextRoleReveal() {
     if (revealIndex < revealPlayers.length) {
       showCurrentReveal();
     } else {
-      startNightPhase();
+      const startPhase = gameSettings.startPhase || 'night';
+      if (startPhase === 'day') showDayPhase(); else startNightPhase();
     }
   }
 }
