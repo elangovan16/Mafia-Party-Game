@@ -1,0 +1,469 @@
+﻿/* ============================
+   MAFIA PARTY GAME - STYLES
+   ============================ */
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbars ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+
+/* ─── Responsive ─── */
+@media (max-width: 360px) {
+  .game-title { font-size: 2.5rem; }
+  .roles-grid { grid-template-columns: repeat(2, 1fr); }
+  .players-grid { grid-template-columns: repeat(2, 1fr); }
+  .target-list { grid-template-columns: 1fr; }
+
+  /* Local Pass & Play Mobile Optimizations */
+  .local-setup-content {
+    padding: 0.5rem 0.75rem 1.5rem;
+  }
+  .local-step-header {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  .local-step-icon {
+    font-size: 1.6rem;
+  }
+  .local-player-add-form .btn {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+  }
+  .org-instruction-card {
+    padding: 0.85rem 1rem;
+    gap: 0.6rem;
+  }
+  .local-players-list {
+    max-height: 200px;
+  }
+  .role-cover-content {
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+  .role-cover-moon {
+    font-size: 4rem;
+  }
+  .role-cover-title {
+    font-size: 1.5rem;
+  }
+  #btn-ready-reveal, #btn-next-player {
+    min-width: 200px;
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+@media (min-width: 600px) {
+  .setup-content, .join-content, .lobby-content,
+  .rules-content, .phase-content, .vote-content,
+  .dawn-content, .win-content, .role-reveal-content {
+    padding: 2rem;
+  }
+  .roles-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .players-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .target-list { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   LOCAL / PASS & PLAY MODE STYLES
+   ═══════════════════════════════════════════════════ */
+
+/* Local button — distinct teal color */
+.btn-local {
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+}
+
+.btn-local:hover {
+  box-shadow: 0 6px 30px rgba(6, 182, 212, 0.55);
+  transform: translateY(-1px);
+}
+
+.btn-local:disabled {
+  background: var(--bg-card2);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.glow-local { animation: localGlow 2.5s ease-in-out infinite; }
+
+@keyframes localGlow {
+  0%,100% { box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3); }
+  50%      { box-shadow: 0 4px 40px rgba(6, 182, 212, 0.65); }
+}
+
+/* ── Local Setup Screen ── */
+#screen-local {
+  background: var(--bg-deep);
+}
+
+.local-setup-content {
+  padding: 0 1rem 2rem;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.local-step {
+  animation: fadeSlideIn 0.4s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.local-step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-glass2);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+}
+
+.local-step-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.local-step-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #06b6d4;
+  letter-spacing: 0.05em;
+}
+
+.local-step-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* ── Add Player Form ── */
+.local-player-add-form {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.local-player-add-form .input-field {
+  flex: 1;
+}
+
+.local-player-add-form .btn {
+  flex-shrink: 0;
+  padding: 0.875rem 1.1rem;
+  font-size: 1.1rem;
+}
+
+/* ── Progress Bar ── */
+.local-players-needed-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.local-needed-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.local-progress-bar {
+  width: 100%;
+  height: 5px;
+  background: var(--bg-card2);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.local-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0891b2, #06b6d4);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── Local Players List ── */
+.local-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.local-player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-glass2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  animation: fadeSlideIn 0.25s ease both;
+}
+
+.local-player-row:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.06);
+}
+
+.local-player-avatar {
+  font-size: 1.4rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 182, 212, 0.12);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.local-player-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.local-remove-btn {
+  background: transparent;
+  border: 1px solid rgba(229, 62, 62, 0.3);
+  color: var(--accent-red);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.local-remove-btn:hover {
+  background: rgba(229, 62, 62, 0.15);
+  border-color: var(--accent-red);
+}
+
+.local-start-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   PRIVATE ROLE COVER SCREEN
+   ═══════════════════════════════════════════════════ */
+
+#screen-role-cover {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
+    var(--bg-deep);
+  justify-content: center;
+  align-items: center;
+}
+
+.role-cover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 2rem;
+  gap: 1.5rem;
+  max-width: 380px;
+  width: 100%;
+  margin: auto;
+}
+
+.role-cover-moon {
+  font-size: 5rem;
+  animation: moonPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.5));
+}
+
+.role-cover-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.08em;
+}
+
+.role-cover-sub {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #06b6d4;
+  min-height: 1.5em;
+}
+
+.role-cover-instruction {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 0.7rem 1rem;
+  background: var(--bg-glass2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  max-width: 280px;
+}
+
+.role-cover-shield {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: rgba(6, 182, 212, 0.6);
+  letter-spacing: 0.04em;
+}
+
+#btn-ready-reveal {
+  font-size: 1rem;
+  padding: 1rem 2rem;
+  min-width: 240px;
+}
+
+/* ═══════════════════════════════════════════════════
+   ORGANIZER / NARRATOR UI STYLES
+   ═══════════════════════════════════════════════════ */
+
+/* Organizer badge pill */
+.org-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #06b6d4;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+/* Organizer instruction card */
+.org-instruction-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.1rem 1.25rem;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-md);
+  text-align: left;
+  max-width: 340px;
+  width: 100%;
+  backdrop-filter: blur(8px);
+}
+
+.org-instruction-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.org-instruction-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Quoted spoken text (what organizer says aloud) */
+.org-quote {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+/* ── Night Narrator Step Overlay ── */
+.narrator-step {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 1rem;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(6, 182, 212, 0.1) 0%, transparent 60%),
+    rgba(13, 6, 24, 0.97);
+  border-top: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  animation: fadeSlideIn 0.3s ease both;
+}
+
+.narrator-step .org-instruction-card--night {
+  max-width: 100%;
+  font-size: 1rem;
+}
+
+.narrator-step .org-instruction-card--night .org-instruction-text {
+  font-size: 1rem;
+}
+
+/* Cover screen two-state layout */
+#cover-state-a,
+#cover-state-b {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  animation: fadeSlideIn 0.3s ease both;
+}
+
+/* Style the cover screens role reveal footer for local mode */
+.role-reveal-footer.local-footer {
+  border-top: 1px solid rgba(6, 182, 212, 0.2);
+  padding-top: 1rem;
+}

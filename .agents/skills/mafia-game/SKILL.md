@@ -53,7 +53,7 @@ No server, no build, no install required.
   <script src="roles.js">    <!-- must be first: ROLES, ROLE_ORDER, ROLE_PRESETS -->
   <script src="network.js">  <!-- second: Network object -->
   <script src="game.js">     <!-- third: Game engine (uses ROLES) -->
-  <script src="ui.js">       <!-- last: UI controller (uses all above) -->
+  <script src="js/ui/core.js"> <!-- last: UI controller modules (core, setup, lobby, game, network_handler) -->
   ```
 
 **Admin panel load order** (in `admin.html`):
@@ -61,14 +61,20 @@ No server, no build, no install required.
   <script src="roles.js">    <!-- same as above -->
   <script src="network.js">
   <script src="game.js">
-  <script src="admin.js">    <!-- replaces ui.js; stubs window.UI -->
+  <script src="js/admin/core.js"> <!-- replaces ui modules; stubs window.UI -->
+  <script src="js/admin/setup.js">
+  <script src="js/admin/players.js">
+  <script src="js/admin/night.js">
+  <script src="js/admin/vote.js">
+  <script src="js/admin/roles.js">
   ```
 
 ---
 
-### `styles.css`
-- **~1000 lines** of hand-crafted CSS with no framework
-- CSS custom properties defined in `:root` — always use variables, never hardcode colors
+### `styles.css` & `css/` directory
+- CSS is modularized into `css/variables.css`, `css/base.css`, `css/components.css`, `css/screens.css`, `css/animations.css`
+- `styles.css` acts as the main entry point using `@import` statements to remain build-free
+- CSS custom properties defined in `css/variables.css` `:root` — always use variables, never hardcode colors
 - Key CSS variable names:
   ```css
   --bg-deep, --bg-dark, --bg-card, --bg-glass  /* backgrounds */
@@ -86,11 +92,11 @@ No server, no build, no install required.
 
 ---
 
-### `admin.html` + `admin.css` + `admin.js`
+### `admin.html` + `admin.css` + `js/admin/*`
 **Standalone developer/testing panel — open `admin.html` directly in a browser.**
 
-Does NOT depend on `ui.js` or any DOM state from `index.html`.
-On init, `admin.js` stubs `window.UI.appendLog` so `game.js` never crashes without the game DOM.
+Does NOT depend on `js/ui/*` or any DOM state from `index.html`.
+On init, `js/admin/core.js` stubs `window.UI.appendLog` so `game.js` never crashes without the game DOM.
 
 #### 6 Tabs:
 | Tab ID | Purpose |
@@ -102,7 +108,7 @@ On init, `admin.js` stubs `window.UI.appendLog` so `game.js` never crashes witho
 | `tab-roles` | Role browser: all roles with meta tags, filterable by team |
 | `tab-log` | Timestamped event log, color-coded, exportable to .txt |
 
-#### Key `Admin` API (public module returned from IIFE):
+#### Key `Admin` API (public module spread across `js/admin/*` files):
 ```js
 // Tab & state
 Admin.switchTab(id, btn)          // switches active tab
@@ -161,9 +167,8 @@ NAMES.random    // Ajax, Blaze, Colt…
 
 #### How to add a new admin feature:
 1. Add the HTML element (select/button/div) to the relevant tab in `admin.html`
-2. Add the handler function inside the `Admin` IIFE in `admin.js`
-3. Return it from the public `return {}` at the bottom
-4. Wire it via `onclick="Admin.myFunction()"` in the HTML
+2. Add the handler function as `Admin.myFunction = function() {}` in the relevant `js/admin/*` module
+3. Wire it via `onclick="Admin.myFunction()"` in the HTML
 
 ---
 
@@ -337,8 +342,8 @@ win                  → host→all: game over
 
 ---
 
-### `ui.js`
-**The UI controller — the "glue" that connects game logic to the DOM.**
+### `js/ui/*`
+**The UI controllers — the "glue" that connects game logic to the DOM.**
 
 #### Key global variables:
 ```js
@@ -420,7 +425,7 @@ Elimination Screen (role revealed)
 
 ### Adding a new screen
 1. Add `<div id="screen-xyz" class="screen">` in `index.html`
-2. Call `showScreen('screen-xyz')` from `ui.js` at the right moment
+2. Call `showScreen('screen-xyz')` from `js/ui/core.js` at the right moment
 3. Style it in `styles.css` with `#screen-xyz { background: ... }`
 
 ### Adding a new night action
@@ -430,7 +435,7 @@ Elimination Screen (role revealed)
 
 ### Adding a new win condition
 1. Add win condition check in `game.js → checkWinCondition()`
-2. Add win display data to the `WIN_DATA` object in `ui.js`
+2. Add win display data to the `WIN_DATA` object in `js/ui/game.js`
 3. Call `showWinScreen('myWinKey')` when condition triggers
 
 ### Role card color theming
@@ -461,7 +466,7 @@ In Local Pass & Play mode:
 Edit the `SETTINGS_CONFIG` constant in `roles.js`. The HTML elements are generated dynamically at startup from this config.
 
 ### Change minimum players to start
-In `ui.js → updateLobbyPlayers()`: `const canStart = count >= 5;`
+In `js/ui/lobby.js → updateLobbyPlayers()`: `const canStart = count >= 5;`
 
 ### Add a role to the default preset for N players
 Edit `ROLE_PRESETS` in `roles.js`.

@@ -6,7 +6,7 @@
 ![Game Banner](https://img.shields.io/badge/Platform-Web%20%7C%20Android%20%7C%20iOS%20%7C%20Windows%20%7C%20Linux-blueviolet?style=for-the-badge)
 ![No Install](https://img.shields.io/badge/No%20Install-Just%20Open%20index.html-success?style=for-the-badge)
 ![Multiplayer](https://img.shields.io/badge/Multiplayer-P2P%20WebRTC-orange?style=for-the-badge)
-![Roles](https://img.shields.io/badge/Roles-17%20Unique-red?style=for-the-badge)
+![Roles](https://img.shields.io/badge/Roles-22%20Unique-red?style=for-the-badge)
 
 ---
 
@@ -23,7 +23,7 @@ The Town wins by eliminating all Mafia. The Mafia wins by gaining majority contr
 
 ## ✨ Features
 
-- 🎭 **17 unique roles** across Town, Mafia, and Neutral factions
+- 🎭 **22 unique roles** across Town, Mafia, and Neutral factions
 - 🌐 **Real-time multiplayer** — play online OR over a local WiFi/hotspot
 - 📱 **Works on any device** — Android, iPhone, Windows, Linux, Mac — just open in a browser
 - 🃏 **Private role reveal** — flip-card animation, pass device around
@@ -72,7 +72,7 @@ The game uses **WebRTC peer-to-peer** connections via PeerJS — no server costs
 
 ---
 
-## 🎭 All 17 Roles
+## 🎭 All 22 Roles
 
 ### 🏘️ Town (good guys)
 
@@ -87,6 +87,9 @@ The game uses **WebRTC peer-to-peer** connections via PeerJS — no server costs
 | **Vigilante** | 🏹 | Shoot one player at night. If innocent, you die from guilt next night |
 | **Escort** | 💃 | Roleblock a player — they cannot use their night ability |
 | **Spy** | 🕵️ | See who the Mafia visits each night |
+| **Rambo** | 💥 | Once per game: shoot a player at night. Wasting it makes you a regular Villager |
+| **Lover** | 💕 | Share a soulbound connection. If one Lover dies, the other dies instantly |
+| **Saint** | 🕊️ | If the Town votes you out, everyone who voted for you dies instantly |
 
 ### 🔪 Mafia (bad guys)
 
@@ -96,6 +99,7 @@ The game uses **WebRTC peer-to-peer** connections via PeerJS — no server costs
 | **Godfather** | 🎩 | Mafia leader — **appears innocent** to the Detective |
 | **Consort** | 🌹 | Roleblocks a Town player at night |
 | **Consigliere** | 📋 | Investigates a player and learns their **exact role** |
+| **Framer** | 🖼️ | Choose a player to frame. If investigated by the Detective, they appear guilty |
 
 ### ⚖️ Neutral (wildcard)
 
@@ -105,6 +109,7 @@ The game uses **WebRTC peer-to-peer** connections via PeerJS — no server costs
 | **Serial Killer** | 🗡️ | Kill one player each night — win by being the **last one standing** |
 | **Executioner** | ⚔️ | Get your **assigned target lynched** — if they die another way, become a Jester |
 | **Survivor** | 🧲 | Just **survive to the end** — has 4 bulletproof vests to block attacks |
+| **Arsonist** | 🔥 | Douse a player in gasoline, or ignite all previously doused players. Win by being the last standing |
 
 ---
 
@@ -143,15 +148,17 @@ Roles are **auto-suggested** based on player count, but you can toggle any role 
 Mafia Party Game/
 │
 ├── index.html        ← All game screens (HTML structure only)
-├── styles.css        ← Complete visual design (~1000 lines, no framework)
-├── roles.js          ← All 17 role definitions + presets + deck builder
+├── styles.css        ← Main CSS file (imports modules from css/)
+├── css/              ← Modular CSS files (variables, base, screens, etc.)
+├── roles.js          ← All 22 role definitions + presets + deck builder
 ├── game.js           ← Game engine: state, night resolution, voting, win detection
 ├── network.js        ← P2P multiplayer layer (PeerJS/WebRTC wrapper)
-├── ui.js             ← UI controller: screen switching, timers, events
+├── js/
+│   ├── ui/           ← UI controller modules (core, game, lobby, network_handler, setup)
+│   └── admin/        ← Admin panel logic modules (core, players, setup, night, vote, roles)
 │
 ├── admin.html        ← Admin / Developer testing panel
 ├── admin.css         ← Admin panel styles (dark purple theme)
-├── admin.js          ← Admin panel logic (dummy players, game inspector, testers)
 │
 ├── manifest.json     ← PWA manifest (install on phone like native app)
 ├── README.md         ← This file
@@ -181,7 +188,7 @@ Mafia Party Game/
 │  └──────────┘                          │ updates            │
 │                                         ▼                   │
 │                         ┌──────────────────────────────┐   │
-│  ┌──────────┐ modifies │           ui.js               │   │
+│  ┌──────────┐ modifies │         js/ui/*.js          │   │
 │  │index.html│◄─────────│   (screen manager + events)  │   │
 │  │ (screens)│          │   - showScreen()              │   │
 │  └──────────┘          │   - night queue UI            │   │
@@ -248,7 +255,7 @@ On **Windows (Chrome/Edge)**:
 
 ### Adding a New Screen
 1. Add `<div id="screen-xyz" class="screen">` in `index.html`
-2. Call `showScreen('screen-xyz')` from `ui.js`
+2. Call `showScreen('screen-xyz')` from `js/ui/core.js` (or relevant ui module)
 3. Style it in `styles.css`
 
 ### Changing Colors
@@ -275,7 +282,7 @@ Open `admin.html` directly in a browser (or click **🛠️ Admin / Dev** on the
 | **🎭 Live Players** | Inspect every player's role, team, alive/dead status, kill/revive individuals, bulk kill/revive all, shuffle roles randomly, change a player's role mid-game via dropdown |
 | **🌙 Night Tester** | Submit any night action (Mafia kill, Investigate, Heal, Roleblock, SK Kill, Guard, Consigliere, Vigilante) for any actor → target pair, view pending queue, resolve night and see results |
 | **⚖️ Vote Tester** | Cast votes between any players, view live tally bars, resolve vote to eliminate, or directly eliminate any player with a custom cause |
-| **📖 Role Browser** | All 17 roles with icon, description, ability, team badge, and meta tags (priority, night action, max count) — filterable by team |
+| **📖 Role Browser** | All 22 roles with icon, description, ability, team badge, and meta tags (priority, night action, max count) — filterable by team |
 | **📋 Event Log** | Timestamped, color-coded log of every admin action and game event — exportable to `.txt` |
 
 ### Sidebar Quick Actions

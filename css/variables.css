@@ -1,0 +1,35 @@
+﻿/* ─── CSS Custom Properties ─── */
+:root {
+  --bg-deep:       #0d0618;
+  --bg-dark:       #1a0a2e;
+  --bg-card:       #1e0f35;
+  --bg-card2:      #251240;
+  --bg-glass:      rgba(30, 15, 53, 0.85);
+  --bg-glass2:     rgba(255,255,255,0.05);
+  --primary:       #c62a88;
+  --primary-light: #e040a0;
+  --primary-dark:  #8b1c5e;
+  --secondary:     #7c3aed;
+  --secondary-light:#9f61f0;
+  --accent-red:    #e53e3e;
+  --accent-gold:   #f6c90e;
+  --accent-blue:   #3b82f6;
+  --accent-green:  #10b981;
+  --accent-teal:   #14b8a6;
+  --text-primary:  #f8f4ff;
+  --text-secondary:#b8a9cc;
+  --text-muted:    #7a6a8e;
+  --border:        rgba(200,150,255,0.15);
+  --border-bright: rgba(200,150,255,0.4);
+  --shadow-glow:   0 0 30px rgba(198, 42, 136, 0.35);
+  --shadow-card:   0 8px 32px rgba(0,0,0,0.5);
+  --radius-sm:     8px;
+  --radius-md:     16px;
+  --radius-lg:     24px;
+  --radius-xl:     32px;
+  --font-display:  'Cinzel', serif;
+  --font-body:     'Inter', sans-serif;
+  --font-accent:   'Playfair Display', serif;
+  --transition:    all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
